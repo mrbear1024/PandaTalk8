@@ -286,7 +286,7 @@ hr {
 
 /* ---- Header / Nav ---- */
 .site-header {
-  padding: var(--sp-3) 0;
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--rule-soft);
   background: transparent;
   position: sticky;
@@ -314,15 +314,32 @@ hr {
   letter-spacing: -0.01em;
 }
 .brand:hover { text-decoration: none; }
+
+/* Wrapper that does the circular clip + border + shadow. The inner <img>
+   is over-sized and centered to hide the source PNG's white halo around
+   the panda. Total nav height stays ~68px (52 + sp-2 ×2). */
 .brand-avatar {
-  width: 44px;
-  height: 44px;
+  display: inline-block;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--paper-3);
-  object-fit: cover;
   border: 1.5px solid var(--ink);
   box-shadow: 1.5px 1.5px 0 var(--panda-red);
   flex-shrink: 0;
+  position: relative;
+}
+.brand-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 130%;
+  height: 130%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  object-position: center;
 }
 .brand-name { display: flex; flex-direction: column; line-height: 1.05; gap: 2px; }
 .brand-name .zh {

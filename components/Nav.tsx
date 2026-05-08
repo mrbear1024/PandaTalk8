@@ -22,13 +22,10 @@ export default function Nav() {
     <header className="site-header">
       <div className="inner">
         <Link href="/" className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/panda-avatar.png"
-            alt=""
-            className="brand-avatar"
-            style={{ borderWidth: "2px 2px 2px 0px" }}
-          />
+          <span className="brand-avatar" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/panda-avatar.png" alt="" className="brand-avatar-img" />
+          </span>
           <span className="brand-name">
             <span className="zh">Panda</span>
             <span className="en">solo / ai / builder</span>
