@@ -207,6 +207,7 @@ export async function listPostsAdmin(): Promise<Post[]> {
   const { data, error } = await sb
     .from("posts")
     .select("*")
+    .order("featured", { ascending: false })
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw new PostsServiceError(error.message, 500);

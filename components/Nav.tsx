@@ -7,6 +7,7 @@ import ThemeToggle from "./ThemeToggle";
 const items = [
   { key: "home", label: "home", href: "/" },
   { key: "blog", label: "blog", href: "/blog" },
+  { key: "courses", label: "courses", href: "/courses" },
   { key: "projects", label: "projects", href: "/projects" },
   { key: "about", label: "about", href: "/about" },
 ];

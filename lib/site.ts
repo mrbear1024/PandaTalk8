@@ -5,11 +5,11 @@ export const SITE: Site = {
   tagline: "Ex-engineer. Now a solo AI founder, creator, and builder-in-public.",
   location: "Online",
   socials: [
-    { label: "X", handle: "@pandatalk", href: "https://x.com" },
-    { label: "GitHub", handle: "pandatalk", href: "https://github.com" },
-    { label: "YouTube", handle: "@pandatalk", href: "https://youtube.com" },
-    { label: "Newsletter", handle: "Daily Panda", href: "#" },
-    { label: "Email", handle: "hi@pandatalk.dev", href: "mailto:hi@pandatalk.dev" },
+    { label: "X", handle: "@pandatalk8", href: "https://x.com/pandatalk8" },
+    { label: "Substack", handle: "pandatalk", href: "https://pandatalk.substack.com/" },
+    { label: "YouTube", handle: "@pandatalk8", href: "https://www.youtube.com/@pandatalk8" },
+    { label: "GitHub", handle: "mrbear1024", href: "https://github.com/mrbear1024" },
+    { label: "RSS", handle: "/blog/rss.xml", href: "/blog/rss.xml" },
   ],
   now: {
     status: "currently",

@@ -8,6 +8,7 @@ export async function adminListPosts(): Promise<Post[]> {
   const { data, error } = await sb
     .from("posts")
     .select("*")
+    .order("featured", { ascending: false })
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);

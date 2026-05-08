@@ -35,6 +35,7 @@ export default async function ProjectsIndexPage() {
   const ship = projects.filter((p) => p.status === "ship");
   const wip = projects.filter((p) => p.status === "wip");
   const idea = projects.filter((p) => p.status === "idea");
+  const hasAny = projects.length > 0;
 
   return (
     <div className="route-enter container">
@@ -54,11 +55,29 @@ export default async function ProjectsIndexPage() {
         </div>
       </section>
 
-      <Group title="Shipped" projects={ship} />
-      <div style={{ height: "var(--sp-7)" }} />
-      <Group title="In progress" projects={wip} />
-      <div style={{ height: "var(--sp-7)" }} />
-      <Group title="Ideas" projects={idea} />
+      {hasAny ? (
+        <>
+          <Group title="Shipped" projects={ship} />
+          {wip.length > 0 ? (
+            <>
+              <div style={{ height: "var(--sp-7)" }} />
+              <Group title="In progress" projects={wip} />
+            </>
+          ) : null}
+          {idea.length > 0 ? (
+            <>
+              <div style={{ height: "var(--sp-7)" }} />
+              <Group title="Ideas" projects={idea} />
+            </>
+          ) : null}
+        </>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-glyph" aria-hidden="true">⚙</div>
+          <h2 className="empty-title">Nothing here yet</h2>
+          <p className="empty-copy">More projects on the way.</p>
+        </div>
+      )}
     </div>
   );
 }

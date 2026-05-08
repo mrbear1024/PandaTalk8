@@ -4,14 +4,64 @@ import { useMemo, useState } from "react";
 import PostRow from "./PostRow";
 import type { Post } from "@/lib/types";
 
+function bodyToText(body: Post["body"]): string {
+  if (!body) return "";
+  if (typeof body === "string") return body.replace(/<[^>]+>/g, " ");
+  return body.map((b) => b.text).join(" ");
+}
+
 export default function BlogTagFilter({ posts }: { posts: Post[] }) {
   const [filter, setFilter] = useState<string>("all");
+  const [query, setQuery] = useState<string>("");
+
   const tags = useMemo(() => ["all", ...Array.from(new Set(posts.map((p) => p.tag)))], [posts]);
-  const list = filter === "all" ? posts : posts.filter((p) => p.tag === filter);
+
+  const list = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return posts.filter((p) => {
+      if (filter !== "all" && p.tag !== filter) return false;
+      if (!q) return true;
+      const haystack = [p.title, p.excerpt, p.tag, bodyToText(p.body)]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [posts, filter, query]);
+
+  const pinned = list.filter((p) => p.featured);
+  const rest = list.filter((p) => !p.featured);
 
   return (
     <>
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "var(--sp-6)" }}>
+      <div className="blog-toolbar">
+        <div className="blog-search">
+          <span aria-hidden="true" className="blog-search-icon">⌕</span>
+          <input
+            type="search"
+            className="blog-search-input"
+            placeholder="Search posts…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search posts"
+          />
+          {query ? (
+            <button
+              type="button"
+              className="blog-search-clear"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
+        <a className="rss-pill" href="/blog/rss.xml" aria-label="Subscribe via RSS">
+          <span className="rss-icon" aria-hidden="true">📡</span>
+          RSS
+        </a>
+      </div>
+
+      <div className="blog-tags">
         {tags.map((t) => {
           const active = filter === t;
           return (
@@ -28,16 +78,39 @@ export default function BlogTagFilter({ posts }: { posts: Post[] }) {
                 fontWeight: active ? 600 : 400,
               }}
             >
-              {t} {active && `(${list.length})`}
+              {t}
             </button>
           );
         })}
+        <span className="blog-count">
+          {list.length} {list.length === 1 ? "post" : "posts"}
+        </span>
       </div>
-      <ul className="post-list">
-        {list.map((p) => (
-          <PostRow key={p.slug} post={p} />
-        ))}
-      </ul>
+
+      {list.length === 0 ? (
+        <p className="muted" style={{ marginTop: "var(--sp-6)" }}>
+          No posts match &ldquo;{query}&rdquo;.
+        </p>
+      ) : (
+        <>
+          {pinned.length > 0 ? (
+            <>
+              <div className="blog-subhead">📌 Pinned</div>
+              <ul className="post-list">
+                {pinned.map((p) => (
+                  <PostRow key={p.slug} post={p} />
+                ))}
+              </ul>
+              {rest.length > 0 ? <div className="blog-subhead">Latest</div> : null}
+            </>
+          ) : null}
+          <ul className="post-list">
+            {rest.map((p) => (
+              <PostRow key={p.slug} post={p} />
+            ))}
+          </ul>
+        </>
+      )}
     </>
   );
 }

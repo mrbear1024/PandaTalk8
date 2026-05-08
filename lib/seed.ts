@@ -7,6 +7,7 @@ export const SEED_POSTS: Post[] = [
     read_time: "8 min",
     lang: "EN",
     tag: "essay",
+    featured: true,
     title: "From Coder to Creator: One Year After Quitting My Job",
     excerpt:
       "A year ago I left a comfortable engineering job to bet everything on AI content and solo products. No audience, no plan, no safety net. Here's what kept me alive.",
@@ -102,85 +103,17 @@ export const SEED_POSTS: Post[] = [
 
 export const SEED_PROJECTS: Project[] = [
   {
-    slug: "pandatalk-ai",
-    glyph: "P/",
-    title: "PandaTalk AI",
+    slug: "xlearnity-ai",
+    glyph: "X/",
+    title: "xlearnity.ai",
     description:
-      "An AI toolkit for indie developers — unified access to frontier models, a curated prompt library, and a paid community.",
+      "An AI-powered learning platform that turns any topic into a personalised, structured curriculum.",
     status: "ship",
     status_label: "Live",
-    stack: ["Next.js", "Claude", "Stripe"],
+    stack: ["Next.js", "AI", "Supabase"],
     year: "2025–",
-    href: "#",
+    href: "https://xlearnity.ai",
     long:
-      "The project I've worked on the longest. It started as a little tool I built for myself to save on API costs, then I shared it with friends, and a year later it has 800+ paying users. It isn't trying to beat anyone — it just happens to understand its users better than the generic tools do.",
-  },
-  {
-    slug: "bamboo-notes",
-    glyph: "¶/",
-    title: "Bamboo Notes",
-    description:
-      "A Markdown editor built for writers: built-in AI editing, auto illustrations, and one-click publishing to X and newsletter.",
-    status: "wip",
-    status_label: "In progress",
-    stack: ["Tauri", "Rust", "React"],
-    year: "2026",
-    href: "#",
-    long:
-      "My own biggest pain as a content person: cross-platform formatting. Bamboo Notes is the thing I built for myself. 30 beta users are testing it now. Launching in June.",
-  },
-  {
-    slug: "daily-panda",
-    glyph: "✉/",
-    title: "Daily Panda",
-    description:
-      "One email every weekday: three deep reads from the AI world, with my commentary. Over 2,000 subscribers.",
-    status: "ship",
-    status_label: "Daily",
-    stack: ["Resend", "cron", "Notion"],
-    year: "2025–",
-    href: "#",
-    long:
-      "Since June 2025, every weekday. Never missed one. It's the project I'm most proud of, and by far the one that's brought me the most opportunity — nearly every partnership I have came from a subscriber.",
-  },
-  {
-    slug: "prompt-market",
-    glyph: "$/",
-    title: "PromptMarket",
-    description:
-      "A marketplace for prompts — so good prompts can be paid for, shared, forked, and improved over time.",
-    status: "idea",
-    status_label: "Idea",
-    stack: ["idea stage"],
-    year: "2026",
-    href: "#",
-    long:
-      "Still just a thought. If prompts are a new kind of code, they deserve their own GitHub and npm. There isn't one. Maybe I build it.",
-  },
-  {
-    slug: "x-lens",
-    glyph: "X/",
-    title: "X-Lens",
-    description:
-      "Analytics for creators on X — what actually grows your audience, vs. what just felt good to post.",
-    status: "ship",
-    status_label: "Soft launch",
-    stack: ["Cloudflare", "D1", "React"],
-    year: "2025",
-    href: "#",
-    long: "A tool I built for myself. A friend saw it and asked me to open it up. Now it has 200 paying users.",
-  },
-  {
-    slug: "panda-cursor",
-    glyph: ">_",
-    title: "panda-cursor.css",
-    description:
-      "A tiny open-source project: replace your website's cursor with a pixel-art panda. 400 stars on GitHub.",
-    status: "ship",
-    status_label: "Open source",
-    stack: ["CSS", "OSS"],
-    year: "2025",
-    href: "#",
-    long: "Wrote it over a weekend. Didn't expect anyone to care.",
+      "xlearnity.ai is my flagship project: an AI-powered learning platform that turns any topic into a personalised, structured curriculum. It's where most of my time goes right now.",
   },
 ];

@@ -125,3 +125,15 @@ export async function deletePostAction(slug: string): Promise<void> {
   bustCaches(slug);
   redirect("/admin/posts");
 }
+
+export async function togglePostFeaturedAction(
+  slug: string,
+  next: boolean
+): Promise<void> {
+  await guard();
+  const sb = getAdminSupabase();
+  const { error } = await sb.from("posts").update({ featured: next }).eq("slug", slug);
+  if (error) throw new Error(error.message);
+  bustCaches(slug);
+  redirect("/admin/posts");
+}

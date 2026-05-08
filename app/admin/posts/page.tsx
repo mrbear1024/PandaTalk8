@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { adminListPosts } from "@/lib/admin-fetch";
-import { deletePostAction } from "@/app/admin/_actions/posts";
+import { deletePostAction, togglePostFeaturedAction } from "@/app/admin/_actions/posts";
 import DeleteForm from "@/components/admin/DeleteForm";
+import PinForm from "@/components/admin/PinForm";
 import { formatDate } from "@/lib/format";
 import type { Post } from "@/lib/types";
 
@@ -60,13 +61,19 @@ export default async function AdminPostsPage({
           <tbody>
             {posts.map((p) => {
               const del = deletePostAction.bind(null, p.slug);
+              const togglePin = togglePostFeaturedAction.bind(null, p.slug, !p.featured);
               return (
                 <tr key={p.slug}>
                   <td className="mono muted" style={{ fontSize: "0.85rem" }}>
                     {formatDate(p.date)}
                   </td>
                   <td>
-                    <div className="row-title">{p.title}</div>
+                    <div className="row-title">
+                      {p.featured ? (
+                        <span title="Pinned" style={{ marginRight: 6 }}>📌</span>
+                      ) : null}
+                      {p.title}
+                    </div>
                     <div className="row-meta">
                       /{p.slug} · {p.read_time} · {p.lang}
                     </div>
@@ -81,6 +88,9 @@ export default async function AdminPostsPage({
                     <Link className="link-action" href={`/admin/posts/${p.slug}/edit`}>
                       edit
                     </Link>
+                    <span style={{ marginLeft: "var(--sp-3)" }}>
+                      <PinForm action={togglePin} pinned={!!p.featured} />
+                    </span>
                     <span style={{ marginLeft: "var(--sp-3)" }}>
                       <DeleteForm action={del} confirm={`Delete "${p.title}"?`} />
                     </span>

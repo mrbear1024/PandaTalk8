@@ -12,6 +12,9 @@ export async function getAllPosts(): Promise<Post[]> {
   const { data, error } = await sb
     .from("posts")
     .select("*")
+    // Featured posts surface above non-featured ones, then newest first,
+    // then created_at as a stable tiebreaker for same-day publishes.
+    .order("featured", { ascending: false })
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) {

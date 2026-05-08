@@ -10,7 +10,7 @@ function tagColor(tag: string) {
 
 export default function PostRow({ post }: { post: Post }) {
   return (
-    <li className="post-item">
+    <li className={`post-item${post.featured ? " is-pinned" : ""}`}>
       <span className="date">{formatDate(post.date)}</span>
       <div className="post-item-main">
         {post.cover ? (
@@ -24,7 +24,8 @@ export default function PostRow({ post }: { post: Post }) {
             {post.title}
           </Link>
           <div className="excerpt">{post.excerpt}</div>
-          <div style={{ marginTop: "10px", display: "flex", gap: "8px" }}>
+          <div style={{ marginTop: "10px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {post.featured ? <span className="tag pinned">📌 pinned</span> : null}
             <span className={`tag ${tagColor(post.tag)}`}>{post.tag}</span>
             <span className="tag">{post.lang}</span>
           </div>

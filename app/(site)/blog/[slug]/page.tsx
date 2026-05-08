@@ -86,7 +86,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             If you read this far — thank you.
             <br />
             Come tell me what you thought on{" "}
-            <a href="https://x.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://x.com/pandatalk8" target="_blank" rel="noopener noreferrer">
               X
             </a>
             .

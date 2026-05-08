@@ -14,8 +14,14 @@ create table if not exists posts (
   -- blocks; both are handled by the reader.
   body         jsonb       not null default '""'::jsonb,
   cover        text,
+  -- Pinned posts surface above non-pinned posts on the blog index, regardless
+  -- of date. Used for editorial highlights / evergreen content.
+  featured     boolean     not null default false,
   created_at   timestamptz not null default now()
 );
+
+-- Idempotent migration for existing databases.
+alter table posts add column if not exists featured boolean not null default false;
 
 create table if not exists projects (
   slug         text primary key,
@@ -42,4 +48,5 @@ drop policy if exists "projects read" on projects;
 create policy "projects read" on projects for select using (true);
 
 create index if not exists posts_date_idx on posts (date desc);
+create index if not exists posts_featured_idx on posts (featured desc, date desc);
 create index if not exists projects_status_idx on projects (status);

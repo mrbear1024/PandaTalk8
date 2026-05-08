@@ -20,6 +20,7 @@ export type Post = {
   excerpt: string;
   body: PostBodyBlock[] | string | null;
   cover?: string | null;
+  featured?: boolean | null;
 };
 
 export type ProjectStatus = "ship" | "wip" | "idea";
