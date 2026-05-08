@@ -2190,8 +2190,9 @@ nav.primary a.active::before {
 }
 .home-social {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-3);
   padding: 12px 14px;
   border: 1px solid var(--rule-soft);
   border-radius: var(--radius-md);
@@ -2206,8 +2207,24 @@ nav.primary a.active::before {
   box-shadow: 3px 3px 0 var(--panda-red);
   text-decoration: none;
 }
-.home-social.rss:hover {
-  box-shadow: 3px 3px 0 var(--mustard);
+.home-social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+.home-social-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.home-social-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 .home-social-label {
   font-family: var(--font-mono);
@@ -2221,51 +2238,31 @@ nav.primary a.active::before {
   font-size: 0.92rem;
   color: var(--ink);
   letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* RSS subscribe card */
-.home-rss-card {
-  display: flex;
+/* Top-right RSS icon link in the site header. Sits between primary nav
+   items and the theme toggle. Slight panda-red accent on hover so it
+   reads as a feed-style action. */
+.nav-rss {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-5);
-  padding: var(--sp-5);
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-md);
-  background: var(--paper-2);
-  box-shadow: 4px 4px 0 var(--mustard);
-  margin-bottom: var(--sp-7);
-  flex-wrap: wrap;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rule-soft);
+  border-radius: 50%;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
-.home-rss-title {
-  font-family: var(--font-display);
-  font-size: var(--step-2);
-  font-weight: 500;
-  margin-top: 6px;
-  letter-spacing: -0.01em;
-}
-.home-rss-copy {
-  margin: 6px 0 0;
-  color: var(--ink-2);
-  max-width: 52ch;
-}
-.home-rss-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-}
-.home-rss-url {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  background: var(--paper);
-  border: 1px dashed var(--rule-soft);
-  padding: 6px 10px;
-  border-radius: var(--radius);
-  color: var(--ink-2);
-}
-@media (max-width: 680px) {
-  .home-rss-card { flex-direction: column; align-items: flex-start; }
+.nav-rss:hover {
+  color: var(--panda-red-deep);
+  border-color: var(--panda-red);
+  transform: translate(-1px, -1px);
+  text-decoration: none;
 }
 
 .home-section {

@@ -12,6 +12,15 @@ const items = [
   { key: "about", label: "about", href: "/about" },
 ];
 
+function RssIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="6.18" cy="17.82" r="2.18" />
+      <path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83C19.56 11.34 12.66 4.44 4 4.44zM4 10.1v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83C13.9 14.41 9.59 10.1 4 10.1z" />
+    </svg>
+  );
+}
+
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -38,6 +47,14 @@ export default function Nav() {
               {it.label}
             </Link>
           ))}
+          <a
+            href="/blog/rss.xml"
+            className="nav-rss"
+            aria-label="RSS feed"
+            title="RSS feed"
+          >
+            <RssIcon />
+          </a>
           <ThemeToggle />
         </nav>
       </div>

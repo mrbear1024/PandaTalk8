@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PostRow from "@/components/PostRow";
 import ProjectCard from "@/components/ProjectCard";
+import SocialIcon from "@/components/SocialIcon";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
 import { SITE } from "@/lib/site";
@@ -53,41 +54,33 @@ export default async function HomePage() {
 
         <div className="home-socials" aria-label="Social media">
           <a href="https://x.com/pandatalk8" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-label">X</span>
-            <span className="home-social-handle">@pandatalk8</span>
+            <span className="home-social-icon"><SocialIcon kind="x" /></span>
+            <span className="home-social-text">
+              <span className="home-social-label">X</span>
+              <span className="home-social-handle">@pandatalk8</span>
+            </span>
           </a>
           <a href="https://pandatalk.substack.com/" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-label">Substack</span>
-            <span className="home-social-handle">pandatalk</span>
+            <span className="home-social-icon"><SocialIcon kind="substack" /></span>
+            <span className="home-social-text">
+              <span className="home-social-label">Substack</span>
+              <span className="home-social-handle">pandatalk</span>
+            </span>
           </a>
           <a href="https://www.youtube.com/@pandatalk8" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-label">YouTube</span>
-            <span className="home-social-handle">@pandatalk8</span>
+            <span className="home-social-icon"><SocialIcon kind="youtube" /></span>
+            <span className="home-social-text">
+              <span className="home-social-label">YouTube</span>
+              <span className="home-social-handle">@pandatalk8</span>
+            </span>
           </a>
           <a href="https://github.com/mrbear1024" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-label">GitHub</span>
-            <span className="home-social-handle">mrbear1024</span>
+            <span className="home-social-icon"><SocialIcon kind="github" /></span>
+            <span className="home-social-text">
+              <span className="home-social-label">GitHub</span>
+              <span className="home-social-handle">mrbear1024</span>
+            </span>
           </a>
-          <a href="/blog/rss.xml" className="home-social rss">
-            <span className="home-social-label">RSS</span>
-            <span className="home-social-handle">/blog/rss.xml</span>
-          </a>
-        </div>
-
-        <div className="home-rss-card">
-          <div>
-            <div className="eyebrow">Subscribe</div>
-            <div className="home-rss-title">Follow the blog by RSS</div>
-            <p className="home-rss-copy">
-              Get every new post in your reader of choice — no email, no algorithm.
-            </p>
-          </div>
-          <div className="home-rss-actions">
-            <code className="home-rss-url">/blog/rss.xml</code>
-            <a href="/blog/rss.xml" className="btn">
-              Open feed →
-            </a>
-          </div>
         </div>
 
         <section className="home-section">
