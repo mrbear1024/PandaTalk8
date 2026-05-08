@@ -1,23 +1,34 @@
 import Link from "next/link";
-import { adminListPosts, adminListProjects } from "@/lib/admin-fetch";
+import { adminListCommunities, adminListCourses, adminListPosts, adminListProjects } from "@/lib/admin-fetch";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   let posts = 0;
   let projects = 0;
+  let communities = 0;
+  let courses = 0;
   let shipped = 0;
   let wip = 0;
-  let ideas = 0;
+  let published = 0;
+  let comingSoon = 0;
   let connectionError: string | null = null;
 
   try {
-    const [p, pr] = await Promise.all([adminListPosts(), adminListProjects()]);
+    const [p, pr, cm, co] = await Promise.all([
+      adminListPosts(),
+      adminListProjects(),
+      adminListCommunities(),
+      adminListCourses(),
+    ]);
     posts = p.length;
     projects = pr.length;
+    communities = cm.length;
+    courses = co.length;
     shipped = pr.filter((x) => x.status === "ship").length;
     wip = pr.filter((x) => x.status === "wip").length;
-    ideas = pr.filter((x) => x.status === "idea").length;
+    published = cm.filter((x) => x.status === "published").length + co.filter((x) => x.status === "available").length;
+    comingSoon = co.filter((x) => x.status === "coming_soon").length;
   } catch (e) {
     connectionError = (e as Error).message;
   }
@@ -33,14 +44,15 @@ export default async function AdminDashboard() {
           <Link href="/admin/projects/new" className="btn">
             + new project
           </Link>
+          <Link href="/admin/communities/new" className="btn ghost">
+            + new community
+          </Link>
         </div>
       </div>
 
       {connectionError ? (
         <div className="alert">
-          Couldn&apos;t reach Supabase: {connectionError}. Check{" "}
-          <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code>, and that{" "}
-          <code>supabase/schema.sql</code> has been applied.
+          Supabase is not ready: {connectionError}. Apply <code>supabase/schema.sql</code> and check the env keys.
         </div>
       ) : null}
 
@@ -53,6 +65,14 @@ export default async function AdminDashboard() {
           <div className="k">projects</div>
           <div className="v">{projects}</div>
         </Link>
+        <Link href="/admin/communities" className="stat-card" style={{ textDecoration: "none" }}>
+          <div className="k">communities</div>
+          <div className="v">{communities}</div>
+        </Link>
+        <Link href="/admin/courses" className="stat-card" style={{ textDecoration: "none" }}>
+          <div className="k">courses</div>
+          <div className="v">{courses}</div>
+        </Link>
         <div className="stat-card">
           <div className="k">shipped</div>
           <div className="v" style={{ color: "var(--bamboo-deep)" }}>{shipped}</div>
@@ -62,8 +82,12 @@ export default async function AdminDashboard() {
           <div className="v" style={{ color: "#7B5414" }}>{wip}</div>
         </div>
         <div className="stat-card">
-          <div className="k">ideas</div>
-          <div className="v" style={{ color: "var(--ink-3)" }}>{ideas}</div>
+          <div className="k">published</div>
+          <div className="v" style={{ color: "var(--panda-red-deep)" }}>{published}</div>
+        </div>
+        <div className="stat-card">
+          <div className="k">coming soon</div>
+          <div className="v" style={{ color: "var(--ink-3)" }}>{comingSoon}</div>
         </div>
       </div>
     </>

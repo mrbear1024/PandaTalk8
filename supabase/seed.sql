@@ -59,6 +59,44 @@ insert into posts (slug, date, read_time, lang, tag, title, excerpt, body) value
  ]'::jsonb)
 on conflict (slug) do nothing;
 
+insert into communities (
+  slug, name, subtitle, price, currency, description, audience, highlights, includes,
+  faq, join_instructions, cta_label, sort_order, featured, status
+) values
+('x-growth-wechat', 'X 增长微信群', 'Flagship community for X growth and monetization.', '789', '¥',
+ '面向想系统做 X 增长、内容定位和商业化的创作者与独立开发者。',
+ '适合已经开始发 X，想把内容增长变成产品、社群或商业机会的人。',
+ array['账号定位与内容策略','X 增长案例拆解','商业化路径与产品化思路'],
+ array['微信群交流','增长复盘','内容选题讨论','实战案例分享'],
+ '[{"q":"适合零基础吗？","a":"更适合已经准备认真做 X 的人；完全零基础可以先看 X 冷启动成长群。"}]'::jsonb,
+ '微信搜索公众号 PandaTalk8，发送「X增长」获取加入方式。',
+ '查看加入方式', 1, true, 'published'),
+('ai-learning-circle', '熊老板的 AI 学习圈', 'AI tools, workflows, and practical learning notes.', '199', '¥',
+ '持续学习 AI 工具、工作流、产品案例和创作者实践。',
+ '适合 AI 学习者、内容创作者、独立开发者和想提升生产力的人。',
+ array['AI 工具与工作流','产品案例拆解','学习资料与实践笔记'],
+ array['知识星球内容','AI 案例分享','工具清单','学习路径'],
+ '[{"q":"内容偏技术吗？","a":"不只面向程序员，更关注 AI 如何进入真实工作流和产品实践。"}]'::jsonb,
+ '微信搜索公众号 PandaTalk8，发送「AI学习圈」获取加入方式。',
+ '查看加入方式', 2, false, 'published'),
+('x-cold-start', 'X 冷启动成长群', 'Low-friction starter path for building on X.', '79', '¥',
+ '低价入门产品，帮助刚开始做 X 的人完成账号定位、第一批内容、早期互动和冷启动节奏。',
+ '适合刚开始做 X，想用较低门槛建立基础方法的人。',
+ array['0 到 1 冷启动','账号基础搭建','早期内容节奏'],
+ array['成长群交流','冷启动资料','基础方法论','常见问题答疑'],
+ '[{"q":"和 789 元微信群有什么区别？","a":"这个是低价入门，旗舰微信群更适合系统增长和商业化。"}]'::jsonb,
+ '微信搜索公众号 PandaTalk8，发送「冷启动」获取加入方式。',
+ '查看加入方式', 3, false, 'published')
+on conflict (slug) do nothing;
+
+insert into courses (
+  slug, title, subtitle, description, price, status, external_url, cta_label, sort_order, featured
+) values
+('x-growth-system', 'X Growth System', 'Build, write, and sell in public.',
+ '一门关于 X 账号定位、内容增长和商业化路径的系统课程。课程在独立系统中承接。',
+ 'Coming soon', 'coming_soon', 'https://pandatalk8.com', '查看课程系统', 1, true)
+on conflict (slug) do nothing;
+
 insert into projects (slug, glyph, title, description, status, status_label, stack, year, href, long) values
 ('pandatalk-ai', 'P/', 'PandaTalk AI',
  'An AI toolkit for indie developers — unified access to frontier models, a curated prompt library, and a paid community.',

@@ -27,7 +27,30 @@ function readProjectFields(fd: FormData) {
   const year = String(fd.get("year") ?? "").trim();
   const href = String(fd.get("href") ?? "#").trim() || "#";
   const long = String(fd.get("long") ?? "").trim();
-  return { slug, glyph, title, description, status, status_label, stack, year, href, long };
+  const cover = String(fd.get("cover") ?? "").trim() || null;
+  const cta_label = String(fd.get("cta_label") ?? "").trim() || null;
+  const cta_href = String(fd.get("cta_href") ?? "").trim() || null;
+  const audience = String(fd.get("audience") ?? "").trim() || null;
+  const sort_order = Number(String(fd.get("sort_order") ?? "100")) || 100;
+  const featured = fd.get("featured") === "on";
+  return {
+    slug,
+    glyph,
+    title,
+    description,
+    status,
+    status_label,
+    stack,
+    year,
+    href,
+    long,
+    cover,
+    cta_label,
+    cta_href,
+    audience,
+    sort_order,
+    featured,
+  };
 }
 
 function validate(p: ReturnType<typeof readProjectFields>): string | null {
@@ -45,6 +68,8 @@ function bustCaches(slug: string) {
   revalidatePath("/");
   revalidatePath("/projects");
   revalidatePath(`/projects/${slug}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/projects");
 }
 
 export async function createProjectAction(formData: FormData): Promise<{ error?: string }> {

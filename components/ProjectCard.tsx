@@ -13,6 +13,7 @@ export default function ProjectCard({ project }: { project: Project }) {
       </div>
       <h3>{project.title}</h3>
       <p className="project-desc">{project.description}</p>
+      {project.audience ? <p className="project-audience">{project.audience}</p> : null}
       <div className="project-meta">
         <div className="tags">
           {project.stack.map((s) => (
@@ -23,6 +24,7 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
         <span>{project.year}</span>
       </div>
+      <span className="offer-action">{project.cta_label ?? "Read notes"} →</span>
     </Link>
   );
 }

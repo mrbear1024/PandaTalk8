@@ -173,6 +173,11 @@ export default function PostForm({
           </div>
         </div>
 
+        <label className="check-field">
+          <input type="checkbox" name="featured" defaultChecked={!!initial?.featured} />
+          <span>Pin this post as featured</span>
+        </label>
+
         <div className="form-actions">
           <button className="btn" type="submit" disabled={pending || uploading}>
             {pending ? "saving…" : submitLabel}

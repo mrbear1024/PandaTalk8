@@ -8,6 +8,8 @@ const items = [
   { href: "/admin", label: "dashboard", exact: true },
   { href: "/admin/posts", label: "posts" },
   { href: "/admin/projects", label: "projects" },
+  { href: "/admin/communities", label: "communities" },
+  { href: "/admin/courses", label: "courses" },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -25,7 +27,7 @@ export default function AdminNav() {
           <img src="/assets/panda-avatar.png" alt="" className="brand-avatar" />
           <span className="brand-name">
             <span className="zh">Admin</span>
-            <span className="en">pandatalk control room</span>
+            <span className="en">pandatalk8 control room</span>
           </span>
         </Link>
         <nav className="primary">

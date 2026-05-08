@@ -1,7 +1,11 @@
 import Link from "next/link";
+import CommunityCard from "@/components/CommunityCard";
+import CourseCard from "@/components/CourseCard";
 import PostRow from "@/components/PostRow";
 import ProjectCard from "@/components/ProjectCard";
 import SocialIcon from "@/components/SocialIcon";
+import { getAllCommunities } from "@/lib/communities";
+import { getAllCourses } from "@/lib/courses";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
 import { SITE } from "@/lib/site";
@@ -12,9 +16,16 @@ import { SITE } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [posts, projects] = await Promise.all([getAllPosts(), getAllProjects()]);
-  const latestPosts = posts.slice(0, 5);
+  const [posts, projects, communities, courses] = await Promise.all([
+    getAllPosts(),
+    getAllProjects(),
+    getAllCommunities(),
+    getAllCourses(),
+  ]);
+  const featuredPosts = posts.filter((p) => p.featured).slice(0, 1);
+  const latestPosts = posts.filter((p) => !p.featured).slice(0, 3);
   const featuredProjects = projects.slice(0, 3);
+  const featuredCourses = courses.slice(0, 2);
 
   return (
     <div className="route-enter">
@@ -23,20 +34,22 @@ export default async function HomePage() {
           <div className="home-hero-copy">
             <div className="kicker">online · building in public</div>
             <h1 className="home-title">
-              Hi, I&apos;m{" "}
-              <span className="stroke">Panda</span>.
+              AI builder &amp;{" "}
+              <span className="stroke">indie founder</span>.
             </h1>
             <p className="home-lede">
-              Ex-engineer. Now a solo AI founder, creator, and builder-in-public — making
-              products, recording content, staying alive.
+              Building products, writing ideas, and selling myself in public.
             </p>
             <div className="hero-actions">
-              <Link href="/blog" className="btn">
-                Read the blog →
+              <a href={SITE.xUrl} target="_blank" rel="noopener noreferrer" className="btn">
+                Follow {SITE.xHandle} →
+              </a>
+              <Link href="/about#wechat" className="btn ghost">
+                订阅公众号
               </Link>
-              <Link href="/projects" className="btn ghost">
-                See projects
-              </Link>
+            </div>
+            <div className="trust-strip">
+              <strong>{SITE.xFollowers}</strong> followers on X <span>·</span> 公众号 {SITE.wechatName}
             </div>
             <div className="now-bar">
               <span className="dot" />
@@ -53,20 +66,20 @@ export default async function HomePage() {
         </div>
 
         <div className="home-socials" aria-label="Social media">
-          <a href="https://x.com/pandatalk8" target="_blank" rel="noopener noreferrer" className="home-social">
+          <a href={SITE.xUrl} target="_blank" rel="noopener noreferrer" className="home-social">
             <span className="home-social-icon"><SocialIcon kind="x" /></span>
             <span className="home-social-text">
               <span className="home-social-label">X</span>
-              <span className="home-social-handle">@pandatalk8</span>
+              <span className="home-social-handle">{SITE.xHandle}</span>
             </span>
           </a>
-          <a href="https://pandatalk.substack.com/" target="_blank" rel="noopener noreferrer" className="home-social">
+          <Link href="/about#wechat" className="home-social">
             <span className="home-social-icon"><SocialIcon kind="substack" /></span>
             <span className="home-social-text">
-              <span className="home-social-label">Substack</span>
-              <span className="home-social-handle">pandatalk</span>
+              <span className="home-social-label">公众号</span>
+              <span className="home-social-handle">{SITE.wechatName}</span>
             </span>
-          </a>
+          </Link>
           <a href="https://www.youtube.com/@pandatalk8" target="_blank" rel="noopener noreferrer" className="home-social">
             <span className="home-social-icon"><SocialIcon kind="youtube" /></span>
             <span className="home-social-text">
@@ -86,6 +99,23 @@ export default async function HomePage() {
         <section className="home-section">
           <div className="section-head">
             <div>
+              <div className="eyebrow">Community</div>
+              <h2>Learn, grow, and ship with Mr Panda</h2>
+            </div>
+            <div className="index">
+              <Link href="/community">all communities →</Link>
+            </div>
+          </div>
+          <div className="offer-grid">
+            {communities.slice(0, 3).map((community) => (
+              <CommunityCard key={community.slug} community={community} />
+            ))}
+          </div>
+        </section>
+
+        <section className="home-section">
+          <div className="section-head">
+            <div>
               <div className="eyebrow">Writing</div>
               <h2>Latest posts</h2>
             </div>
@@ -94,6 +124,9 @@ export default async function HomePage() {
             </div>
           </div>
           <ul className="post-list">
+            {featuredPosts.map((p) => (
+              <PostRow key={p.slug} post={p} />
+            ))}
             {latestPosts.map((p) => (
               <PostRow key={p.slug} post={p} />
             ))}
@@ -116,6 +149,25 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+
+        {featuredCourses.length > 0 ? (
+          <section className="home-section">
+            <div className="section-head">
+              <div>
+                <div className="eyebrow">Courses</div>
+                <h2>Courses and systems</h2>
+              </div>
+              <div className="index">
+                <Link href="/courses">all courses →</Link>
+              </div>
+            </div>
+            <div className="course-grid">
+              {featuredCourses.map((course) => (
+                <CourseCard key={course.slug} course={course} />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </section>
     </div>
   );

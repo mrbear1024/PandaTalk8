@@ -4,6 +4,7 @@ import ASCIIDivider from "@/components/ASCIIDivider";
 import { getAllPosts, getPost } from "@/lib/posts";
 import { formatDate } from "@/lib/format";
 import { highlightCodeBlocks } from "@/lib/highlight";
+import { SITE } from "@/lib/site";
 import type { Metadata } from "next";
 
 type Params = { slug: string };
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const post = await getPost(decodeSlug(params.slug));
   if (!post) return { title: "Not found" };
   return {
-    title: `${post.title} · PandaTalk`,
+    title: `${post.title} · PandaTalk8`,
     description: post.excerpt,
   };
 }
@@ -64,7 +65,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             <span>·</span>
             <span>{post.read_time} read</span>
             <span>·</span>
-            <span>by PandaTalk</span>
+            <span>by {SITE.displayName}</span>
           </div>
         </header>
         <div className="prose">
@@ -86,7 +87,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             If you read this far — thank you.
             <br />
             Come tell me what you thought on{" "}
-            <a href="https://x.com/pandatalk8" target="_blank" rel="noopener noreferrer">
+            <a href={SITE.xUrl} target="_blank" rel="noopener noreferrer">
               X
             </a>
             .

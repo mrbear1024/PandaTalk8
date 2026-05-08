@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const project = await getProject(decodeSlug(params.slug));
   if (!project) return { title: "Not found" };
   return {
-    title: `${project.title} · PandaTalk`,
+    title: `${project.title} · PandaTalk8`,
     description: project.description,
   };
 }
@@ -88,6 +88,11 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
           >
             {project.description}
           </p>
+          {project.audience ? (
+            <p className="muted" style={{ fontSize: "0.98rem", marginTop: "var(--sp-3)" }}>
+              For: {project.audience}
+            </p>
+          ) : null}
           <div className="meta">
             <span>stack:</span>
             {project.stack.map((s) => (
@@ -99,6 +104,16 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
         </header>
         <div className="prose">
           <p>{project.long}</p>
+          <p>
+            <a
+              href={project.cta_href || project.href || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn"
+            >
+              {project.cta_label || "Open project"} →
+            </a>
+          </p>
           <p
             className="mono muted"
             style={{ fontSize: "0.85rem", marginTop: "var(--sp-6)" }}

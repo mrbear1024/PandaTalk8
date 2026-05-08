@@ -3,7 +3,7 @@ import { getAllProjects } from "@/lib/projects";
 import type { Project } from "@/lib/types";
 
 export const metadata = {
-  title: "Projects · PandaTalk",
+  title: "Projects · PandaTalk8",
   description: "Products built by one person. Some shipped, some in progress, some still only ideas.",
 };
 

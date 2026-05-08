@@ -3,7 +3,7 @@ import AdminNav from "@/components/admin/AdminNav";
 import { isLoggedIn } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Admin · PandaTalk",
+  title: "Admin · PandaTalk8",
   robots: { index: false, follow: false },
 };
 

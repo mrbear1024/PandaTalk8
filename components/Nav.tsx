@@ -7,8 +7,9 @@ import ThemeToggle from "./ThemeToggle";
 const items = [
   { key: "home", label: "home", href: "/" },
   { key: "blog", label: "blog", href: "/blog" },
-  { key: "courses", label: "courses", href: "/courses" },
   { key: "projects", label: "projects", href: "/projects" },
+  { key: "community", label: "community", href: "/community" },
+  { key: "courses", label: "courses", href: "/courses" },
   { key: "about", label: "about", href: "/about" },
 ];
 
@@ -37,8 +38,8 @@ export default function Nav() {
             <img src="/assets/panda-avatar.png" alt="" className="brand-avatar-img" />
           </span>
           <span className="brand-name">
-            <span className="zh">Panda</span>
-            <span className="en">solo / ai / builder</span>
+            <span className="zh">Mr Panda</span>
+            <span className="en">AI / Indie / Builder / Seller</span>
           </span>
         </Link>
         <nav className="primary">

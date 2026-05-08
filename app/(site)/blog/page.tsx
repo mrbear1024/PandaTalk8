@@ -2,7 +2,7 @@ import BlogTagFilter from "@/components/BlogTagFilter";
 import { getAllPosts } from "@/lib/posts";
 
 export const metadata = {
-  title: "Blog · PandaTalk",
+  title: "Blog · PandaTalk8",
   description: "Long-form notes on indie building, AI, and the slow process of learning to make things in public.",
 };
 

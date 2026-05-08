@@ -1,4 +1,4 @@
-import type { Post, Project } from "./types";
+import type { Community, Course, Post, Project } from "./types";
 
 export const SEED_POSTS: Post[] = [
   {
@@ -113,7 +113,91 @@ export const SEED_PROJECTS: Project[] = [
     stack: ["Next.js", "AI", "Supabase"],
     year: "2025–",
     href: "https://xlearnity.ai",
+    cta_label: "Open project",
+    cta_href: "https://xlearnity.ai",
+    audience: "AI learners and indie builders who want a structured path from topic to practice.",
+    sort_order: 1,
+    featured: true,
     long:
       "xlearnity.ai is my flagship project: an AI-powered learning platform that turns any topic into a personalised, structured curriculum. It's where most of my time goes right now.",
+  },
+];
+
+export const SEED_COMMUNITIES: Community[] = [
+  {
+    slug: "x-growth-wechat",
+    name: "X 增长微信群",
+    subtitle: "Flagship community for X growth and monetization.",
+    price: "789",
+    currency: "¥",
+    cover: null,
+    description:
+      "面向想系统做 X 增长、内容定位和商业化的创作者与独立开发者。这里讨论账号定位、内容策略、案例拆解和实战复盘。",
+    audience: "适合已经开始发 X，想把内容增长变成产品、社群或商业机会的人。",
+    highlights: ["账号定位与内容策略", "X 增长案例拆解", "商业化路径与产品化思路"],
+    includes: ["微信群交流", "增长复盘", "内容选题讨论", "实战案例分享"],
+    faq: [
+      { q: "适合零基础吗？", a: "更适合已经准备认真做 X 的人；完全零基础可以先看 X 冷启动成长群。" },
+      { q: "如何加入？", a: "进入详情页查看公众号或微信引导，按说明完成加入。" },
+    ],
+    join_instructions: "微信搜索公众号 PandaTalk8，发送「X增长」获取加入方式。",
+    cta_label: "查看加入方式",
+    sort_order: 1,
+    featured: true,
+    status: "published",
+  },
+  {
+    slug: "ai-learning-circle",
+    name: "熊老板的 AI 学习圈",
+    subtitle: "AI tools, workflows, and practical learning notes.",
+    price: "199",
+    currency: "¥",
+    cover: null,
+    description:
+      "持续学习 AI 工具、工作流、产品案例和创作者实践，适合想把 AI 真正用进工作和产品里的人。",
+    audience: "适合 AI 学习者、内容创作者、独立开发者和想提升生产力的人。",
+    highlights: ["AI 工具与工作流", "产品案例拆解", "学习资料与实践笔记"],
+    includes: ["知识星球内容", "AI 案例分享", "工具清单", "学习路径"],
+    faq: [{ q: "内容偏技术吗？", a: "不只面向程序员，更关注 AI 如何进入真实工作流和产品实践。" }],
+    join_instructions: "微信搜索公众号 PandaTalk8，发送「AI学习圈」获取加入方式。",
+    cta_label: "查看加入方式",
+    sort_order: 2,
+    featured: false,
+    status: "published",
+  },
+  {
+    slug: "x-cold-start",
+    name: "X 冷启动成长群",
+    subtitle: "Low-friction starter path for building on X.",
+    price: "79",
+    currency: "¥",
+    cover: null,
+    description:
+      "低价入门产品，帮助刚开始做 X 的人完成账号定位、第一批内容、早期互动和冷启动节奏。",
+    audience: "适合刚开始做 X，想用较低门槛建立基础方法的人。",
+    highlights: ["0 到 1 冷启动", "账号基础搭建", "早期内容节奏"],
+    includes: ["成长群交流", "冷启动资料", "基础方法论", "常见问题答疑"],
+    faq: [{ q: "和 789 元微信群有什么区别？", a: "这个是低价入门，旗舰微信群更适合系统增长和商业化。" }],
+    join_instructions: "微信搜索公众号 PandaTalk8，发送「冷启动」获取加入方式。",
+    cta_label: "查看加入方式",
+    sort_order: 3,
+    featured: false,
+    status: "published",
+  },
+];
+
+export const SEED_COURSES: Course[] = [
+  {
+    slug: "x-growth-system",
+    title: "X Growth System",
+    subtitle: "Build, write, and sell in public.",
+    cover: null,
+    description: "一门关于 X 账号定位、内容增长和商业化路径的系统课程。课程在独立系统中承接。",
+    price: "Coming soon",
+    status: "coming_soon",
+    external_url: "https://pandatalk8.com",
+    cta_label: "查看课程系统",
+    sort_order: 1,
+    featured: true,
   },
 ];

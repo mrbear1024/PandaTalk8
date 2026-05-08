@@ -74,6 +74,11 @@ export default function ProjectForm({
           />
         </div>
 
+        <div className="form-field full">
+          <label htmlFor="cover">cover image url</label>
+          <input id="cover" name="cover" defaultValue={initial?.cover ?? ""} placeholder="https://…" />
+        </div>
+
         <div className="form-field">
           <label htmlFor="status">status</label>
           <select id="status" name="status" defaultValue={initial?.status ?? "ship"}>
@@ -102,6 +107,24 @@ export default function ProjectForm({
           <input id="href" name="href" defaultValue={initial?.href ?? "#"} placeholder="https://…" />
         </div>
 
+        <div className="form-field">
+          <label htmlFor="cta_label">CTA label</label>
+          <input id="cta_label" name="cta_label" defaultValue={initial?.cta_label ?? ""} placeholder="Open / Join waitlist" />
+        </div>
+        <div className="form-field">
+          <label htmlFor="cta_href">CTA link</label>
+          <input id="cta_href" name="cta_href" defaultValue={initial?.cta_href ?? ""} placeholder="https://…" />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="sort_order">sort order</label>
+          <input id="sort_order" name="sort_order" type="number" defaultValue={initial?.sort_order ?? 100} />
+        </div>
+        <label className="check-field" style={{ alignSelf: "end" }}>
+          <input type="checkbox" name="featured" defaultChecked={!!initial?.featured} />
+          <span>Featured</span>
+        </label>
+
         <div className="form-field full">
           <label htmlFor="stack">stack</label>
           <input
@@ -111,6 +134,17 @@ export default function ProjectForm({
             placeholder="Next.js, Claude, Stripe"
           />
           <span className="hint">comma-separated</span>
+        </div>
+
+        <div className="form-field full">
+          <label htmlFor="audience">audience</label>
+          <textarea
+            id="audience"
+            name="audience"
+            rows={3}
+            defaultValue={initial?.audience ?? ""}
+            placeholder="Who this is for"
+          />
         </div>
 
         <div className="form-field full">

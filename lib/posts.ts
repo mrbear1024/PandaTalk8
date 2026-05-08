@@ -17,6 +17,14 @@ export async function getAllPosts(): Promise<Post[]> {
     .order("featured", { ascending: false })
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
+  if (error && error.message.includes("featured")) {
+    const fallback = await sb
+      .from("posts")
+      .select("*")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (!fallback.error) return (fallback.data ?? []) as Post[];
+  }
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);
     return SEED_POSTS;

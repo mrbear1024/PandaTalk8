@@ -3,8 +3,8 @@ import "./globals.css";
 import ThemeBootScript from "@/components/ThemeBootScript";
 
 export const metadata: Metadata = {
-  title: "PandaTalk · Solo AI Founder",
-  description: "Ex-engineer. Now a solo AI founder, creator, and builder-in-public.",
+  title: "PandaTalk8 · Mr Panda",
+  description: "AI builder & indie founder. Building products, writing ideas, and selling myself in public.",
   icons: { icon: "/assets/panda-avatar.png" },
 };
 

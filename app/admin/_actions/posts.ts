@@ -21,13 +21,16 @@ function readFields(fd: FormData) {
   const cover = String(fd.get("cover") ?? "").trim() || null;
   const bodyHtml = String(fd.get("body_html") ?? "").trim();
   const bodyText = String(fd.get("body_text") ?? "").trim();
-  return { title, cover, bodyHtml, bodyText };
+  const featured = fd.get("featured") === "on";
+  return { title, cover, bodyHtml, bodyText, featured };
 }
 
 function bustCaches(slug: string) {
   revalidatePath("/");
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/posts");
 }
 
 async function ensureUniqueSlug(base: string): Promise<string> {
@@ -54,7 +57,7 @@ function isHtmlEffectivelyEmpty(html: string): boolean {
 
 export async function createPostAction(formData: FormData): Promise<{ error?: string }> {
   await guard();
-  const { title, cover, bodyHtml, bodyText } = readFields(formData);
+  const { title, cover, bodyHtml, bodyText, featured } = readFields(formData);
   if (!title) return { error: "Title is required." };
   if (!bodyHtml || isHtmlEffectivelyEmpty(bodyHtml)) return { error: "Body is empty." };
 
@@ -75,6 +78,7 @@ export async function createPostAction(formData: FormData): Promise<{ error?: st
     excerpt: deriveExcerptFromText(bodyText),
     body: bodyHtml,
     cover,
+    featured,
   };
 
   const sb = getAdminSupabase();
@@ -92,7 +96,7 @@ export async function updatePostAction(
   formData: FormData
 ): Promise<{ error?: string }> {
   await guard();
-  const { title, cover, bodyHtml, bodyText } = readFields(formData);
+  const { title, cover, bodyHtml, bodyText, featured } = readFields(formData);
   if (!title) return { error: "Title is required." };
   if (!bodyHtml || isHtmlEffectivelyEmpty(bodyHtml)) return { error: "Body is empty." };
 
@@ -103,6 +107,7 @@ export async function updatePostAction(
     title,
     body: bodyHtml,
     cover,
+    featured,
     read_time: deriveReadTimeFromText(bodyText),
     excerpt: deriveExcerptFromText(bodyText),
   };

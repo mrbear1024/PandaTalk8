@@ -3,7 +3,7 @@ import Socials from "@/components/Socials";
 import { ABOUT, SITE } from "@/lib/site";
 
 export const metadata = {
-  title: "About · PandaTalk",
+  title: "About · PandaTalk8",
   description: "A pixel panda in glasses and a hoodie — and how he got here.",
 };
 
@@ -22,7 +22,7 @@ export default function AboutPage() {
     <div className="route-enter container">
       <section className="page-intro">
         <div>
-          <div className="num">§ 03 — about</div>
+          <div className="num">§ 05 — about</div>
           <h1>
             About
             <br />
@@ -39,8 +39,8 @@ export default function AboutPage() {
           <div className="about-card">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/assets/panda-avatar.png" alt="Panda avatar" />
-            <div className="name">PandaTalk</div>
-            <div className="handle">@pandatalk · he/him</div>
+            <div className="name">Mr Panda</div>
+            <div className="handle">{SITE.xHandle} · he/him</div>
             <div className="stats">
               <div className="row">
                 <span className="k">location</span>
@@ -63,6 +63,18 @@ export default function AboutPage() {
               <div className="row">
                 <span className="k">coffee/day</span>
                 <span className="v">3 ☕</span>
+              </div>
+              <div className="row">
+                <span className="k">X followers</span>
+                <span className="v">{SITE.xFollowers}</span>
+              </div>
+              <div className="row" id="wechat">
+                <span className="k">公众号</span>
+                <span className="v">{SITE.wechatName}</span>
+              </div>
+              <div className="row">
+                <span className="k">learning group</span>
+                <span className="v">12K members</span>
               </div>
             </div>
             <Socials />

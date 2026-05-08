@@ -1,14 +1,21 @@
+import CourseCard from "@/components/CourseCard";
+import { getAllCourses } from "@/lib/courses";
+
 export const metadata = {
-  title: "Courses · PandaTalk",
-  description: "Courses by PandaTalk on AI, indie building, and creator workflow.",
+  title: "Courses · PandaTalk8",
+  description: "Courses by Mr Panda on AI, indie building, and creator workflow.",
 };
 
-export default function CoursesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CoursesPage() {
+  const courses = await getAllCourses();
+
   return (
     <div className="route-enter container">
       <section className="page-intro">
         <div>
-          <div className="num">§ 03 — courses</div>
+          <div className="num">§ 04 — courses</div>
           <h1>
             The
             <br />
@@ -22,18 +29,19 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      <div className="empty-state">
-        <div className="empty-glyph" aria-hidden="true">⏳</div>
-        <h2 className="empty-title">Building…</h2>
-        <p className="empty-copy">
-          The first course is in production. Subscribe to the{" "}
-          <a href="/blog/rss.xml">RSS feed</a> or follow on{" "}
-          <a href="https://x.com/pandatalk8" target="_blank" rel="noopener noreferrer">
-            X
-          </a>{" "}
-          to be the first to know when it ships.
-        </p>
-      </div>
+      {courses.length > 0 ? (
+        <div className="course-grid">
+          {courses.map((course) => (
+            <CourseCard key={course.slug} course={course} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-glyph" aria-hidden="true">⏳</div>
+          <h2 className="empty-title">Building…</h2>
+          <p className="empty-copy">课程系统独立承接。新课程上线后会在这里展示入口。</p>
+        </div>
+      )}
     </div>
   );
 }

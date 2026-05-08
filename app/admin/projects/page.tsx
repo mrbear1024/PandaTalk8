@@ -42,6 +42,7 @@ export default async function AdminProjectsPage() {
               <th>title</th>
               <th style={{ width: "120px" }}>status</th>
               <th style={{ width: "100px" }}>year</th>
+              <th style={{ width: "90px" }}>sort</th>
               <th style={{ width: "180px" }}></th>
             </tr>
           </thead>
@@ -52,7 +53,10 @@ export default async function AdminProjectsPage() {
                 <tr key={p.slug}>
                   <td className="mono">{p.glyph}</td>
                   <td>
-                    <div className="row-title">{p.title}</div>
+                    <div className="row-title">
+                      {p.featured ? <span title="Featured" style={{ marginRight: 6 }}>★</span> : null}
+                      {p.title}
+                    </div>
                     <div className="row-meta">
                       /{p.slug} · {p.stack.join(" · ")}
                     </div>
@@ -63,6 +67,7 @@ export default async function AdminProjectsPage() {
                   <td className="mono muted" style={{ fontSize: "0.85rem" }}>
                     {p.year}
                   </td>
+                  <td className="mono muted">{p.sort_order ?? 100}</td>
                   <td className="actions">
                     <Link className="link-action" href={`/projects/${p.slug}`} target="_blank" rel="noopener">
                       view

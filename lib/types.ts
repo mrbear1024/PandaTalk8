@@ -36,6 +36,51 @@ export type Project = {
   year: string;
   href: string;
   long: string;
+  cover?: string | null;
+  cta_label?: string | null;
+  cta_href?: string | null;
+  audience?: string | null;
+  sort_order?: number | null;
+  featured?: boolean | null;
+};
+
+export type CommunityStatus = "published" | "draft" | "archived";
+
+export type Community = {
+  slug: string;
+  name: string;
+  subtitle: string;
+  price: string;
+  currency: string;
+  cover?: string | null;
+  description: string;
+  audience: string;
+  highlights: string[];
+  includes: string[];
+  faq: { q: string; a: string }[];
+  join_instructions: string;
+  cta_label: string;
+  sort_order: number;
+  featured: boolean;
+  status: CommunityStatus;
+  created_at?: string;
+};
+
+export type CourseStatus = "coming_soon" | "available" | "archived";
+
+export type Course = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  cover?: string | null;
+  description: string;
+  price: string;
+  status: CourseStatus;
+  external_url: string;
+  cta_label: string;
+  sort_order: number;
+  featured: boolean;
+  created_at?: string;
 };
 
 export type Social = {
@@ -46,8 +91,15 @@ export type Social = {
 
 export type Site = {
   name: string;
+  displayName: string;
+  brandName: string;
   tagline: string;
   location: string;
+  xHandle: string;
+  xUrl: string;
+  xFollowers: string;
+  wechatName: string;
+  domain: string;
   socials: Social[];
   now: { status: string; text: string };
 };
