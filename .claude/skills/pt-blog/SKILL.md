@@ -1,14 +1,28 @@
 ---
 name: pt-blog
-description: Publish, edit, list, or delete posts on the PandaTalk blog from local Markdown files. Supports single-file ops and batch publish from a directory. Use when the user mentions publishing/editing/deleting blog posts, importing drafts, or syncing local markdown to the live site.
+description: Publish, edit, list, or delete posts on the PandaTalk blog from local Markdown files via the site's HTTP API. Supports single-file ops, batch publish from a directory, and inline image upload to R2. Use when the user mentions publishing/editing/deleting blog posts, importing drafts, or syncing local markdown to the live site.
 ---
 
 # PandaTalk blog operations
 
-This skill manages posts on the PandaTalk blog (Next.js 14 + Supabase + Cloudflare R2)
-through a local CLI at `scripts/blog.mjs`. The CLI talks directly to Supabase REST,
-DeepSeek (slug+tag generation), and the R2 bucket using credentials from `.env.local`.
-**No dev server is required.**
+This skill manages posts on **pandatalk8.com** through a thin local CLI at
+`scripts/blog.mjs` that calls the site's authenticated HTTP API
+(`/api/v1/*`). The Next.js server holds all credentials (Supabase, R2,
+DeepSeek) and runs the actual business logic — markdown rendering, AI
+metadata, slug derivation, image upload, cache revalidation. The CLI does
+nothing the API can't already do.
+
+## Architecture
+
+```
+  CLI / skill ──Bearer BLOG_API_KEY──►  Next.js API (Vercel)
+                                          ├── Supabase  (data)
+                                          ├── R2        (images)
+                                          └── DeepSeek  (slug/tag)
+```
+
+A successful write triggers `revalidatePath` on `/`, `/blog`, and
+`/blog/<slug>` — the live site picks up changes on the next request.
 
 ## When to use
 
@@ -19,7 +33,7 @@ DeepSeek (slug+tag generation), and the R2 bucket using credentials from `.env.l
 
 ## CLI reference
 
-Run from the project root (`/Users/wanghe/workspace/Projects/PandaTalk8`):
+Run from the project root:
 
 ```bash
 node scripts/blog.mjs <command> [args]
@@ -27,47 +41,60 @@ node scripts/blog.mjs <command> [args]
 
 | Command | Args | Effect |
 | --- | --- | --- |
-| `list` | — | Print all posts: date / tag / lang / slug / title |
+| `list` | — | Print all posts (date / tag / lang / slug / title) |
 | `get` | `<slug>` | Print full post JSON |
 | `publish` | `<file.md>` | Create one new post |
 | `publish-batch` | `<dir>` | Publish every `*.md` in `<dir>` (one level only, sorted by name) |
-| `edit` | `<slug> <file.md>` | Replace existing post body/title/etc. with file content |
+| `edit` | `<slug> <file.md>` | Replace existing post body/title/etc. |
 | `delete` | `<slug>` | Delete post permanently |
 
-Append `--dry` to `publish` or `publish-batch` to preview the rows that would be
-inserted without actually writing to the database or uploading covers.
+Append `--dry` to `publish` or `publish-batch` to preview without hitting
+the database or uploading any files.
+
+### Required env (in `.env.local`, also on Vercel)
+
+| Var | Purpose |
+| --- | --- |
+| `BLOG_API_BASE_URL` | Default `https://pandatalk8.com`. Override for local dev / staging. |
+| `BLOG_API_KEY` | Shared bearer secret. Same value on CLI side and server side. |
+
+The CLI explicitly **overrides** any matching shell env var with the value
+from `.env.local` — past sessions hit silent failures from a stale shell
+`DEEPSEEK_API_KEY`, so the project file always wins.
 
 ## Markdown source format
 
-A post is a single `.md` file with **optional** YAML front matter:
-
 ```markdown
 ---
-title: 我的标题                  # optional, defaults to filename without extension
-slug: my-slug                    # optional, AI generates from title+body if missing
+title: 我的标题                  # optional. fallback: first H1 in body, then filename
+slug: my-slug                    # optional. AI generates Chinese-keyword slug if missing
 tag: dev                         # optional. one of: essay | dev | growth | thought | uses | note
 cover: ./images/cover.jpg        # optional. local path → uploaded to R2; full URL → used as-is
-date: 2026-05-07                 # optional, ISO. defaults to today
-lang: ZH                         # optional, ZH or EN, auto-detected from body if missing
-excerpt: 一句话摘要               # optional, auto-derived from first paragraph
-read_time: 5 min                 # optional, auto-derived from word count
+date: 2026-05-07                 # optional, ISO. defaults to today (server time)
+lang: ZH                         # optional. ZH or EN. auto-detected from body if missing
+excerpt: 一句话摘要               # optional. auto-derived from first paragraph >30 chars
+read_time: 5 min                 # optional. auto-derived from word count
 ---
 
 # 正文标题
 
-正文 markdown 内容。支持代码块、表格、列表、引用、链接、图片等标准 GFM 语法。
+正文内容…
 ```
 
-All front-matter keys are flat strings (no arrays/objects). Anything not provided
-is filled in: title → AI slug + tag → today's date → derived excerpt + read_time → ZH/EN auto-detection.
+All front-matter keys are flat strings (no arrays/objects). Anything not
+provided is filled in by the server: AI slug + tag → today's date →
+derived excerpt + read_time → ZH/EN auto-detection.
 
 ## Image uploads
 
-- **Cover** images may be local file paths in front matter (`cover: ./images/foo.png`).
-  The CLI uploads them to the R2 bucket and stores the resulting public URL.
-- **Inline body images** (`![alt](path)`) are **not** auto-uploaded — supply full URLs
-  in the markdown, or upload them yourself first via the admin UI / R2 console and
-  paste the URL.
+- **Cover** images may be local file paths (`cover: ./images/foo.png`)
+  or full URLs. Local paths are uploaded via `POST /api/v1/upload`.
+- **Inline body images** (`![alt](path)` and raw `<img src="path">`) are
+  also auto-uploaded. Each unique path is uploaded once per run, then
+  every reference in the body is rewritten to the returned R2 URL before
+  the post is sent. Paths with spaces (e.g. macOS "Application Support")
+  are handled correctly.
+- URLs (http/https) and `data:` URIs are left untouched.
 
 ## Typical flows
 
@@ -83,57 +110,54 @@ node scripts/blog.mjs publish drafts/my-post.md
 node scripts/blog.mjs publish drafts/my-post.md --dry
 ```
 
-### Batch publish a folder of drafts
+### Batch publish a folder
 
 ```bash
 node scripts/blog.mjs publish-batch drafts/
 ```
 
-The CLI continues on individual failures and prints an `ok/failed` summary.
-Slugs that collide with existing posts get `-2`, `-3`, ... appended.
+Continues on individual failures, prints an `ok / failed` summary at the
+end. Slug collisions get `-2`, `-3`, ... appended automatically.
 
 ### Edit an existing post
 
-1. Find its slug:
-   ```bash
-   node scripts/blog.mjs list
-   ```
-2. Replace it with the contents of a markdown file:
-   ```bash
-   node scripts/blog.mjs edit my-post-slug drafts/my-post-v2.md
-   ```
+```bash
+node scripts/blog.mjs list                                 # find the slug
+node scripts/blog.mjs edit my-post-slug drafts/my-v2.md
+```
 
-`edit` updates `title`, `body`, `read_time`, `excerpt` always, and updates
-`tag` / `lang` / `date` / `cover` only if they appear in the front matter.
-The slug itself is **not** changed.
+`edit` updates `body` and `read_time` + `excerpt` (re-derived). Other
+fields update only if present in the file's front matter. The slug itself
+never changes.
 
-### Delete a post
+### Delete
 
 ```bash
 node scripts/blog.mjs delete my-post-slug
 ```
 
-This is permanent; there is no undo.
+Permanent. No undo.
 
 ## Safety rules for the agent
 
-1. **Always confirm with the user before running `delete`** — even if they ask for
-   it generally. Show the slug + title first, then run only after explicit "yes".
-2. **Always confirm before `edit`** unless the user explicitly named the slug they
-   want updated. The CLI overwrites the entire body.
-3. For batch publishes that look heavy (more than ~5 files, or any file with a
-   local `cover:`), run `--dry` first and show the user the preview before the real
-   run.
-4. Never invent a slug. If the user wants to edit a post, run `list` and confirm.
-5. The CLI reads `.env.local` and **lets `.env.local` override the shell** — this
-   is intentional. Do NOT export contradictory `DEEPSEEK_API_KEY` or `SUPABASE_SECRET_KEY`
-   in the shell to "fix" things; edit `.env.local` instead.
+1. **Confirm before `delete`** — show the slug + title first, run only on
+   explicit "yes".
+2. **Confirm before `edit`** unless the user named the slug. `edit`
+   replaces the entire body.
+3. For heavy `publish-batch` runs (>5 files, or files with local `cover:`
+   paths), run with `--dry` first and show the preview.
+4. Never invent a slug. Use `list` to confirm.
+5. Don't try to "fix" auth issues by exporting `BLOG_API_KEY` /
+   `DEEPSEEK_API_KEY` etc. in the shell — the CLI's `.env.local` wins
+   anyway, and any drift hides real config bugs.
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY` | `.env.local` not in project root or missing keys | Verify `.env.local` is at `/Users/wanghe/workspace/Projects/PandaTalk8/.env.local` |
-| `Missing CLOUDFLARE_R2_*` | R2 creds missing | Only required when a post has a local `cover:` path. Fill in or use a URL cover. |
-| AI fallback (`[ai] ... — used fallback`) | DeepSeek 401/timeout/etc. | The post still publishes with `slugify(title)` + `tag: note`. Edit later via `edit` command. |
-| Slug collision: post saved with `-2` suffix | Title was used before | Either accept the suffix, or supply an explicit `slug:` in front matter. |
+| `BLOG_API_KEY missing from .env.local` | env var absent | Add it; same value must be on the Vercel env list |
+| `POST /api/v1/posts → 401 Unauthorized.` | local key ≠ server key | Re-sync `BLOG_API_KEY` between `.env.local` and Vercel env |
+| `POST /api/v1/posts → 503 ... BLOG_API_KEY missing` | server-side env var missing on Vercel | Add `BLOG_API_KEY` in Vercel project settings, redeploy |
+| `→ 500 R2 upload failed.` | R2 creds wrong on the server | Check Vercel env vars `CLOUDFLARE_R2_*` |
+| Slug collision: post saved with `-2` suffix | Title was used before | Accept it, or set explicit `slug:` in front matter |
+| Inline image `[img] missing, skipped: …` | Path doesn't resolve from the .md file's directory | Fix the path or use a full URL |

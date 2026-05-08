@@ -1,39 +1,43 @@
 #!/usr/bin/env node
-// PandaTalk blog CLI
+// PandaTalk blog CLI — thin client for the /api/v1 endpoints.
 //
 //   node scripts/blog.mjs <subcommand> [args...]
 //
 // Subcommands:
-//   list                       — list all posts (date / tag / lang / slug / title)
-//   get <slug>                 — print full post JSON
-//   publish <file.md>          — create a post from a markdown file (frontmatter optional)
+//   list                       — list all posts
+//   get <slug>                 — print one post as JSON
+//   publish <file.md>          — create a post from a markdown file
 //   publish-batch <dir>        — publish every *.md in a directory
-//   edit <slug> <file.md>      — replace an existing post's body/title/etc.
-//   delete <slug>              — delete a post by slug
-//   --dry                      — append to publish/publish-batch to preview only
+//   edit <slug> <file.md>      — replace a post's body/title/etc.
+//   delete <slug>              — delete a post
+//   --dry                      — preview without writing (publish/publish-batch)
 //
-// Reads .env.local for Supabase / R2 / DeepSeek credentials. No dev server needed.
+// All write paths go through the API. The CLI only does:
+//   1. Read .md files + parse frontmatter
+//   2. Walk the markdown body and POST each local image to /api/v1/upload,
+//      rewriting the path to the returned R2 URL
+//   3. POST / PATCH / DELETE on /api/v1/posts (and /api/v1/posts/<slug>)
+//
+// No direct Supabase / R2 / DeepSeek access. Server holds those credentials.
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
-
-import { createClient } from "@supabase/supabase-js";
-import { marked } from "marked";
-import OpenAI from "openai";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
-// ---------------------------------------------------------------------------
-// Env loading. Read .env.local manually so the CLI is independent of Next.js.
-// .env.local OVERRIDES the shell — opposite of Next.js's default. Reason:
-// the CLI is run from the same project tree by an author who owns the keys
-// in .env.local; an inherited shell var (e.g. a stale fish universal var)
-// would otherwise silently outrank the project file and cause confusing 401s.
-// ---------------------------------------------------------------------------
+// .env.local OVERRIDES the shell — opposite of Next.js's runtime default.
+// Same rationale as before: the CLI is run by the project author who owns
+// the keys in .env.local; an inherited shell var would otherwise silently
+// outrank the project file.
+//
+// Exception: BLOG_API_BASE_URL is allowed to be overridden from the shell,
+// so devs can do `BLOG_API_BASE_URL=http://localhost:3000 npm run blog ...`
+// without editing .env.local. Any var listed in SHELL_OVERRIDABLE keeps its
+// shell value if one was set.
+const SHELL_OVERRIDABLE = new Set(["BLOG_API_BASE_URL"]);
+
 async function loadDotEnv() {
   const file = path.join(ROOT, ".env.local");
   let content;
@@ -55,59 +59,90 @@ async function loadDotEnv() {
     ) {
       val = val.slice(1, -1);
     }
+    if (SHELL_OVERRIDABLE.has(key) && process.env[key]) continue;
     process.env[key] = val;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Inline copies of the small helpers in lib/post-derive.ts. Duplicated rather
-// than imported because lib code is TypeScript with `server-only` markers that
-// don't run cleanly under plain node.
-// ---------------------------------------------------------------------------
-function slugify(title) {
-  return (
-    title
-      .normalize("NFKD")
-      .replace(/[̀-ͯ]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9一-鿿㐀-䶿豈-﫿\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 80) || `post-${Date.now()}`
-  );
-}
+await loadDotEnv();
 
-function deriveReadTimeFromText(text) {
-  const cjk = (text.match(/[一-鿿]/g) ?? []).length;
-  const latin = (text.replace(/[一-鿿]/g, " ").match(/\S+/g) ?? []).length;
-  const minutes = Math.max(1, Math.ceil((cjk + latin) / 220));
-  return `${minutes} min`;
-}
+const API_BASE = (process.env.BLOG_API_BASE_URL || "https://pandatalk8.com").replace(/\/$/, "");
+const API_KEY = process.env.BLOG_API_KEY;
 
-function deriveExcerptFromText(text) {
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const first = lines.find((l) => l.length > 30) ?? lines[0] ?? "";
-  return clipExcerpt(first);
-}
-
-function clipExcerpt(text) {
-  const t = text.trim();
-  if (t.length <= 180) return t;
-  return t.slice(0, 177).trimEnd() + "…";
-}
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function detectLang(text) {
-  return /[一-鿿]/.test(text) ? "ZH" : "EN";
+function ensureAuthed() {
+  if (!API_KEY) {
+    throw new Error("BLOG_API_KEY missing from .env.local — see .env.local.example");
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Front matter — flat string keys only. Keep deps zero.
+// HTTP helpers
+// ---------------------------------------------------------------------------
+async function apiJson(method, path, body) {
+  ensureAuthed();
+  const headers = {
+    Authorization: `Bearer ${API_KEY}`,
+    Accept: "application/json",
+  };
+  let bodyInit;
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    bodyInit = JSON.stringify(body);
+  }
+  const res = await fetch(`${API_BASE}${path}`, { method, headers, body: bodyInit });
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    /* non-JSON */
+  }
+  if (!res.ok) {
+    const msg = data?.error || text || res.statusText;
+    throw new Error(`${method} ${path} → ${res.status} ${msg}`);
+  }
+  return data;
+}
+
+async function apiUploadFile(absPath) {
+  ensureAuthed();
+  const buf = await fs.readFile(absPath);
+  const mime = mimeFor(absPath);
+  const blob = new Blob([buf], { type: mime });
+  const filename = path.basename(absPath);
+  const form = new FormData();
+  form.append("file", blob, filename);
+  const res = await fetch(`${API_BASE}/api/v1/upload`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${API_KEY}` },
+    body: form,
+  });
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    /* */
+  }
+  if (!res.ok) throw new Error(`upload ${absPath} → ${res.status} ${data?.error || text}`);
+  return data.url;
+}
+
+const MIME_BY_EXT = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  avif: "image/avif",
+};
+function mimeFor(p) {
+  const ext = path.extname(p).toLowerCase().replace(/^\./, "");
+  return MIME_BY_EXT[ext] || "application/octet-stream";
+}
+
+// ---------------------------------------------------------------------------
+// Markdown helpers (stay local — no rendering, just reading + image rewriting)
 // ---------------------------------------------------------------------------
 function parseFrontmatter(text) {
   const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -128,103 +163,21 @@ function parseFrontmatter(text) {
   return { meta, body: m[2].replace(/^\r?\n/, "") };
 }
 
-function markdownToHtml(md) {
-  marked.setOptions({ gfm: true, breaks: false });
-  return marked.parse(md);
-}
-
-function plainTextFromMarkdown(md) {
-  // Keep \n between blocks so deriveExcerptFromText can pick a real paragraph
-  // (it skips lines shorter than 30 chars — i.e. headings).
-  return md
-    .replace(/```[\s\S]*?```/g, "\n")
-    .replace(/`[^`]*`/g, " ")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/^\s*\|.*\|\s*$/gm, "")
-    .replace(/^[#>*_~-]+\s*/gm, "")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{2,}/g, "\n")
-    .trim();
-}
-
-// ---------------------------------------------------------------------------
-// Service clients
-// ---------------------------------------------------------------------------
-function getDB() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY in .env.local");
-  }
-  return createClient(url, key, { auth: { persistSession: false } });
-}
-
-let _r2 = null;
-function getR2() {
-  if (_r2) return _r2;
-  const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
-  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error("Missing CLOUDFLARE_R2_* credentials in .env.local");
-  }
-  _r2 = new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-  });
-  return _r2;
-}
-
-const MIME = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  gif: "image/gif",
-  avif: "image/avif",
-};
-
-async function uploadFile(localPath) {
-  const buf = await fs.readFile(localPath);
-  const ext = path.extname(localPath).toLowerCase().replace(/^\./, "") || "jpg";
-  const mime = MIME[ext] || "application/octet-stream";
-  const key = `pandatalk/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
-  const bucket = process.env.CLOUDFLARE_R2_BUCKET;
-  const publicBase = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-  if (!bucket || !publicBase) {
-    throw new Error("Missing CLOUDFLARE_R2_BUCKET or CLOUDFLARE_R2_PUBLIC_URL in .env.local");
-  }
-  await getR2().send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: buf,
-      ContentType: mime,
-      CacheControl: "public, max-age=31536000, immutable",
-    })
-  );
-  return `${publicBase.replace(/\/$/, "")}/${key}`;
+function firstH1(body) {
+  const m = body.match(/^[ \t]*#\s+(.+?)\s*$/m);
+  return m ? m[1].trim() : "";
 }
 
 // Walk a markdown body, find every local image reference (`![alt](path)` and
-// raw `<img src="path">`), upload each to R2, and rewrite the body to point
-// at the resulting public URL. Returns { body, count }.
-//
-// `sourceDir` is the directory the markdown file lives in — relative paths
-// are resolved against it. URLs (http/https) and data: URIs are skipped.
-// Each unique local path is uploaded only once per call (cached).
-async function uploadInlineImages(body, sourceDir) {
-  const cache = new Map(); // localAbsPath → publicUrl
+// raw `<img src="path">`), upload each via /api/v1/upload, and rewrite the
+// body to the public URL. Returns { body, count }.
+async function rewriteInlineImages(body, sourceDir) {
+  const cache = new Map(); // localAbsPath → publicUrl|null
   let count = 0;
 
   async function rewrite(rawPath) {
     const trimmed = rawPath.trim();
     if (/^(https?:|data:)/i.test(trimmed)) return null;
-    // Strip an optional CommonMark title suffix `"title"` or `'title'` —
-    // but only if it's actually quoted; otherwise we'd break paths that
-    // legitimately contain spaces (e.g. macOS "Application Support").
     let cleaned = trimmed.replace(/\s+(["'])[^"']*\1\s*$/, "");
     cleaned = cleaned.replace(/^["']|["']$/g, "").trim();
     const abs = path.isAbsolute(cleaned) ? cleaned : path.resolve(sourceDir, cleaned);
@@ -236,23 +189,19 @@ async function uploadInlineImages(body, sourceDir) {
       cache.set(abs, null);
       return null;
     }
-    const url = await uploadFile(abs);
+    const url = await apiUploadFile(abs);
     cache.set(abs, url);
     count++;
     console.log(`  [img] ${cleaned} → ${url}`);
     return url;
   }
 
-  // Markdown image syntax: ![alt](url) or ![alt](url "title")
-  const mdRe = /(!\[[^\]]*\]\()([^)]+)(\))/g;
   const replacements = [];
-  for (const m of body.matchAll(mdRe)) {
-    replacements.push({ match: m, kind: "md" });
+  for (const m of body.matchAll(/(!\[[^\]]*\]\()([^)]+)(\))/g)) {
+    replacements.push({ match: m });
   }
-  // HTML <img src="...">
-  const htmlRe = /(<img\s[^>]*\bsrc=["'])([^"']+)(["'])/gi;
-  for (const m of body.matchAll(htmlRe)) {
-    replacements.push({ match: m, kind: "html" });
+  for (const m of body.matchAll(/(<img\s[^>]*\bsrc=["'])([^"']+)(["'])/gi)) {
+    replacements.push({ match: m });
   }
   replacements.sort((a, b) => a.match.index - b.match.index);
 
@@ -260,164 +209,35 @@ async function uploadInlineImages(body, sourceDir) {
   let cursor = 0;
   for (const { match } of replacements) {
     const [full, prefix, oldPath, suffix] = match;
-    const start = match.index;
-    out += body.slice(cursor, start);
+    out += body.slice(cursor, match.index);
     const newUrl = await rewrite(oldPath);
     out += newUrl ? prefix + newUrl + suffix : full;
-    cursor = start + full.length;
+    cursor = match.index + full.length;
   }
   out += body.slice(cursor);
   return { body: out, count };
 }
 
 // ---------------------------------------------------------------------------
-// AI metadata. Mirrors lib/ai-meta.ts but inlined so this script has no
-// dependency on the Next.js source tree.
-// ---------------------------------------------------------------------------
-const TAGS = ["essay", "dev", "growth", "thought", "uses", "note"];
-
-const AI_SYSTEM_PROMPT = `You generate metadata for a personal bilingual (中/英) blog by an indie AI builder.
-
-For each post, choose:
-
-- A short Chinese slug — 2 to 4 short Chinese keywords joined by ASCII hyphens.
-  - Example: title "AI 如何改变人的劳动？" → slug "ai-改变-劳动" or "ai-劳动变革".
-  - Example: title "Git 入门教程" → slug "git-入门-教程".
-  - Use Chinese keywords that capture the topic, not the full title verbatim.
-  - ASCII tokens (like product names: ai, git, openai, react) stay lowercase.
-  - No spaces, no punctuation other than hyphens, no leading/trailing hyphens.
-  - If the post is purely English with no Chinese content, fall back to ASCII
-    kebab-case (2–5 lowercase words, e.g. "claude-code-workflow").
-
-- One tag from this fixed taxonomy:
-  - "essay" — first-person reflective writing, life/career narrative
-  - "dev" — coding, tools, AI development workflows, technical
-  - "growth" — audience growth, content strategy, marketing
-  - "thought" — short-form opinion, philosophy, observation
-  - "uses" — tool/setup posts (what I use to do X)
-  - "note" — anything else / general
-
-Always respond by calling the set_metadata tool. Never write prose.`;
-
-async function generateMetadata(title, bodyText) {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) {
-    return { slug: slugify(title), tag: "note", source: "fallback", error: "no DEEPSEEK_API_KEY" };
-  }
-  const baseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com/v1";
-  const model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
-  const client = new OpenAI({ apiKey, baseURL });
-
-  const sample = bodyText.slice(0, 1500);
-  const userInput = `Title: ${title}\n\nBody (excerpt):\n${sample || "(empty)"}`;
-
-  try {
-    const res = await client.chat.completions.create({
-      model,
-      max_tokens: 200,
-      temperature: 0.2,
-      messages: [
-        { role: "system", content: AI_SYSTEM_PROMPT },
-        { role: "user", content: userInput },
-      ],
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: "set_metadata",
-            description: "Set the slug and tag for the blog post.",
-            parameters: {
-              type: "object",
-              properties: {
-                slug: { type: "string" },
-                tag: { type: "string", enum: TAGS },
-              },
-              required: ["slug", "tag"],
-              additionalProperties: false,
-            },
-          },
-        },
-      ],
-      tool_choice: { type: "function", function: { name: "set_metadata" } },
-    });
-    const call = res.choices[0]?.message.tool_calls?.[0];
-    if (!call || call.type !== "function") {
-      return { slug: slugify(title), tag: "note", source: "fallback", error: "no tool_call" };
-    }
-    let args;
-    try {
-      args = JSON.parse(call.function.arguments);
-    } catch {
-      return { slug: slugify(title), tag: "note", source: "fallback", error: "invalid JSON args" };
-    }
-    const slug = typeof args.slug === "string" && args.slug.length > 0
-      ? slugify(args.slug)
-      : slugify(title);
-    const tag = TAGS.includes(args.tag) ? args.tag : "note";
-    return { slug, tag, source: "ai" };
-  } catch (e) {
-    return {
-      slug: slugify(title),
-      tag: "note",
-      source: "fallback",
-      error: e?.message || String(e),
-    };
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Subcommand: list
+// Subcommands
 // ---------------------------------------------------------------------------
 async function cmdList() {
-  const db = getDB();
-  const { data, error } = await db
-    .from("posts")
-    .select("slug,title,date,tag,read_time,lang")
-    .order("date", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  if (!data?.length) {
+  const { posts } = await apiJson("GET", "/api/v1/posts");
+  if (!posts?.length) {
     console.log("(no posts)");
     return;
   }
-  for (const p of data) {
+  for (const p of posts) {
     const tag = (p.tag || "").padEnd(8);
     const lang = (p.lang || "").padEnd(2);
     console.log(`${p.date}  ${tag}  ${lang}  /${p.slug}  ·  ${p.title}`);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Subcommand: get
-// ---------------------------------------------------------------------------
 async function cmdGet(slug) {
   if (!slug) throw new Error("usage: blog get <slug>");
-  const db = getDB();
-  const { data, error } = await db.from("posts").select("*").eq("slug", slug).maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error(`not found: ${slug}`);
-  console.log(JSON.stringify(data, null, 2));
-}
-
-// ---------------------------------------------------------------------------
-// Subcommand: publish (single file)
-// ---------------------------------------------------------------------------
-async function ensureUniqueSlug(db, base) {
-  let candidate = base;
-  for (let i = 2; i < 50; i++) {
-    const { data } = await db.from("posts").select("slug").eq("slug", candidate).maybeSingle();
-    if (!data) return candidate;
-    candidate = `${base}-${i}`;
-  }
-  return `${base}-${Date.now()}`;
-}
-
-// Pull the first markdown H1 from a body, if any. Used as a title fallback
-// when frontmatter doesn't supply one — avoids using filenames that have
-// been ASCII-flattened (e.g. "控制反转-AI时代" instead of "控制反转：AI 时代").
-function firstH1(body) {
-  const m = body.match(/^[ \t]*#\s+(.+?)\s*$/m);
-  return m ? m[1].trim() : "";
+  const { post } = await apiJson("GET", `/api/v1/posts/${encodeURIComponent(slug)}`);
+  console.log(JSON.stringify(post, null, 2));
 }
 
 async function cmdPublish(file, opts = {}) {
@@ -433,72 +253,50 @@ async function cmdPublish(file, opts = {}) {
   if (!title) throw new Error(`${file}: title is empty`);
   if (!rawBody.trim()) throw new Error(`${file}: body is empty`);
 
-  // Inline images: upload local files to R2 and rewrite the markdown to point
-  // at the public URL. Skipped on dry-run so we don't spam the bucket.
-  let body = rawBody;
-  if (!opts.dry) {
-    const { body: rewritten, count } = await uploadInlineImages(rawBody, path.dirname(file));
-    body = rewritten;
-    if (count > 0) console.log(`  [img] uploaded ${count} inline image(s)`);
-  }
-
-  const html = markdownToHtml(body);
-  const plain = plainTextFromMarkdown(body);
-
-  let slug = (meta.slug || "").trim();
-  let tag = (meta.tag || "").trim();
-  if (!slug || !tag) {
-    const ai = await generateMetadata(title, plain);
-    if (!slug) slug = ai.slug;
-    if (!tag) tag = ai.tag;
-    if (ai.error) console.warn(`  [ai] ${ai.error} — used fallback`);
-  }
-  slug = slugify(slug);
-  if (!TAGS.includes(tag)) tag = "note";
-
+  // Cover (if local path) — upload first.
   let cover = (meta.cover || "").trim() || null;
   if (cover && !/^https?:\/\//i.test(cover)) {
     const abs = path.isAbsolute(cover) ? cover : path.resolve(path.dirname(file), cover);
     if (opts.dry) {
       cover = `[dry-run] would upload ${abs}`;
     } else {
-      cover = await uploadFile(abs);
+      cover = await apiUploadFile(abs);
       console.log(`  [cover] uploaded → ${cover}`);
     }
   }
 
-  const db = getDB();
+  // Inline images. Skipped on dry-run (we don't want to touch R2 on a preview).
+  let body = rawBody;
   if (!opts.dry) {
-    slug = await ensureUniqueSlug(db, slug);
+    const { body: rewritten, count } = await rewriteInlineImages(rawBody, path.dirname(file));
+    body = rewritten;
+    if (count > 0) console.log(`  [img] uploaded ${count} inline image(s)`);
   }
 
-  const row = {
-    slug,
-    date: meta.date || todayISO(),
-    read_time: meta.read_time || deriveReadTimeFromText(plain),
-    lang: meta.lang || detectLang(plain || title),
-    tag,
+  const payload = {
     title,
-    excerpt: meta.excerpt || deriveExcerptFromText(plain),
-    body: html,
-    cover,
+    body_md: body,
+    slug: meta.slug || undefined,
+    tag: meta.tag || undefined,
+    cover: cover ?? undefined,
+    date: meta.date || undefined,
+    lang: meta.lang || undefined,
+    excerpt: meta.excerpt || undefined,
+    read_time: meta.read_time || undefined,
   };
 
   if (opts.dry) {
     console.log(`[dry-run] ${file} →`);
-    console.log(JSON.stringify({ ...row, body: `${html.slice(0, 120)}…` }, null, 2));
-    return slug;
+    const preview = { ...payload, body_md: `${body.slice(0, 200)}…` };
+    console.log(JSON.stringify(preview, null, 2));
+    return null;
   }
 
-  const { error } = await db.from("posts").insert(row);
-  if (error) throw new Error(error.message);
-  console.log(`✓ published /${slug}  ·  ${title}`);
-  return slug;
+  const { post } = await apiJson("POST", "/api/v1/posts", payload);
+  console.log(`✓ published /${post.slug}  ·  ${post.title}`);
+  return post.slug;
 }
 
-// ---------------------------------------------------------------------------
-// Subcommand: publish-batch
-// ---------------------------------------------------------------------------
 async function cmdPublishBatch(dir, opts = {}) {
   if (!dir) throw new Error("usage: blog publish-batch <dir>");
   const stat = await fs.stat(dir).catch(() => null);
@@ -531,62 +329,44 @@ async function cmdPublishBatch(dir, opts = {}) {
   console.log(`---\n${ok} ${verb}, ${fail} failed (of ${files.length})`);
 }
 
-// ---------------------------------------------------------------------------
-// Subcommand: edit
-// ---------------------------------------------------------------------------
 async function cmdEdit(slug, file) {
   if (!slug || !file) throw new Error("usage: blog edit <slug> <file.md>");
   const text = await fs.readFile(file, "utf8");
   const { meta, body: rawBody } = parseFrontmatter(text);
   if (!rawBody.trim()) throw new Error(`${file}: body is empty`);
 
-  const db = getDB();
-  const { data: existing, error: e0 } = await db
-    .from("posts")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (e0) throw new Error(e0.message);
-  if (!existing) throw new Error(`not found: ${slug}`);
-
-  const { body, count } = await uploadInlineImages(rawBody, path.dirname(file));
+  const { body, count } = await rewriteInlineImages(rawBody, path.dirname(file));
   if (count > 0) console.log(`  [img] uploaded ${count} inline image(s)`);
 
-  const html = markdownToHtml(body);
-  const plain = plainTextFromMarkdown(body);
-  const patch = {
-    title: meta.title?.trim() || existing.title,
-    body: html,
-    read_time: meta.read_time || deriveReadTimeFromText(plain),
-    excerpt: meta.excerpt || deriveExcerptFromText(plain),
-  };
-  if (meta.tag && TAGS.includes(meta.tag.trim())) patch.tag = meta.tag.trim();
-  if (meta.lang) patch.lang = meta.lang.trim();
-  if (meta.date) patch.date = meta.date.trim();
+  const patch = { body_md: body };
+  if (meta.title) patch.title = meta.title;
+  if (meta.tag) patch.tag = meta.tag;
+  if (meta.lang) patch.lang = meta.lang;
+  if (meta.date) patch.date = meta.date;
+  if (meta.excerpt) patch.excerpt = meta.excerpt;
+  if (meta.read_time) patch.read_time = meta.read_time;
 
   if (Object.prototype.hasOwnProperty.call(meta, "cover")) {
     let cover = (meta.cover || "").trim() || null;
     if (cover && !/^https?:\/\//i.test(cover)) {
       const abs = path.isAbsolute(cover) ? cover : path.resolve(path.dirname(file), cover);
-      cover = await uploadFile(abs);
+      cover = await apiUploadFile(abs);
       console.log(`  [cover] uploaded → ${cover}`);
     }
     patch.cover = cover;
   }
 
-  const { error } = await db.from("posts").update(patch).eq("slug", slug);
-  if (error) throw new Error(error.message);
-  console.log(`✓ updated /${slug}`);
+  const { post } = await apiJson(
+    "PATCH",
+    `/api/v1/posts/${encodeURIComponent(slug)}`,
+    patch
+  );
+  console.log(`✓ updated /${post.slug}`);
 }
 
-// ---------------------------------------------------------------------------
-// Subcommand: delete
-// ---------------------------------------------------------------------------
 async function cmdDelete(slug) {
   if (!slug) throw new Error("usage: blog delete <slug>");
-  const db = getDB();
-  const { error } = await db.from("posts").delete().eq("slug", slug);
-  if (error) throw new Error(error.message);
+  await apiJson("DELETE", `/api/v1/posts/${encodeURIComponent(slug)}`);
   console.log(`✓ deleted /${slug}`);
 }
 
@@ -608,13 +388,10 @@ commands:
   delete <slug>                 delete post by slug
   --dry                         (with publish/publish-batch) preview only
 
-env (read from .env.local):
-  NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY  — required
-  CLOUDFLARE_R2_*                                — required only if cover upload
-  DEEPSEEK_API_KEY (+ DEEPSEEK_BASE_URL/MODEL)   — optional, fallback slug+tag if absent`);
+env (read from .env.local; .env.local OVERRIDES the shell):
+  BLOG_API_BASE_URL    e.g. https://pandatalk8.com  (default)
+  BLOG_API_KEY         bearer token (must match server)`);
 }
-
-await loadDotEnv();
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
