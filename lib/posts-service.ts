@@ -15,8 +15,11 @@ import type { Post } from "./types";
 // UI's server actions should funnel through here so the rendering pipeline,
 // AI metadata fallback, slug uniqueness, and cache revalidation behave
 // identically regardless of who initiated the write.
-
-const TAGS = new Set(["essay", "dev", "growth", "thought", "uses", "note"]);
+//
+// Tags are stored as free-form strings — historical taxonomy was the fixed
+// set { essay, dev, growth, thought, uses, note } the AI prompt suggests
+// from, but callers can supply any string (e.g. "AI技术", "创业与IP") to
+// categorise by directory or other axis.
 
 export type CreatePostInput = {
   title: string;
@@ -116,7 +119,7 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     if (!tag) tag = meta.tag;
   }
   slug = slugify(slug);
-  if (!TAGS.has(tag)) tag = "note";
+  if (!tag) tag = "note";
   slug = await ensureUniqueSlug(slug);
 
   const row = {
@@ -166,7 +169,7 @@ export async function updatePost(slug: string, patch: UpdatePostInput): Promise<
     plainForDerive = md ? plainTextFromMarkdown(md) : plainTextFromHtml(givenHtml!);
   }
   if (patch.title != null) fields.title = patch.title.trim();
-  if (patch.tag != null && TAGS.has(patch.tag.trim())) fields.tag = patch.tag.trim();
+  if (patch.tag != null && patch.tag.trim().length > 0) fields.tag = patch.tag.trim();
   if (patch.lang != null) fields.lang = patch.lang.trim();
   if (patch.date != null) fields.date = patch.date.trim();
   if (patch.cover !== undefined) fields.cover = patch.cover ? String(patch.cover).trim() : null;

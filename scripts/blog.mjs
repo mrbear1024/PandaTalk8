@@ -253,6 +253,9 @@ async function cmdPublish(file, opts = {}) {
   if (!title) throw new Error(`${file}: title is empty`);
   if (!rawBody.trim()) throw new Error(`${file}: body is empty`);
 
+  // --tag overrides whatever's in frontmatter / what AI would pick.
+  const overrideTag = opts.tag ? opts.tag : null;
+
   // Cover (if local path) — upload first.
   let cover = (meta.cover || "").trim() || null;
   if (cover && !/^https?:\/\//i.test(cover)) {
@@ -277,7 +280,7 @@ async function cmdPublish(file, opts = {}) {
     title,
     body_md: body,
     slug: meta.slug || undefined,
-    tag: meta.tag || undefined,
+    tag: overrideTag || meta.tag || undefined,
     cover: cover ?? undefined,
     date: meta.date || undefined,
     lang: meta.lang || undefined,
@@ -387,17 +390,48 @@ commands:
   edit <slug> <file.md>         replace post body/title/etc.
   delete <slug>                 delete post by slug
   --dry                         (with publish/publish-batch) preview only
+  --tag <value>                 (with publish/publish-batch) override every
+                                post's tag with this value, regardless of
+                                what's in frontmatter or what AI suggests.
+                                Use for directory-as-category batches, e.g.
+                                  --tag AI技术 / --tag 创业与IP
 
 env (read from .env.local; .env.local OVERRIDES the shell):
   BLOG_API_BASE_URL    e.g. https://pandatalk8.com  (default)
   BLOG_API_KEY         bearer token (must match server)`);
 }
 
+function readFlagValue(argv, name) {
+  const eqMatch = argv.find((a) => a.startsWith(`${name}=`));
+  if (eqMatch) return eqMatch.slice(name.length + 1);
+  const idx = argv.indexOf(name);
+  if (idx >= 0 && idx + 1 < argv.length && !argv[idx + 1].startsWith("--")) {
+    return argv[idx + 1];
+  }
+  return null;
+}
+
 const argv = process.argv.slice(2);
 const cmd = argv[0];
-const flags = new Set(argv.filter((a) => a.startsWith("--")));
-const positional = argv.slice(1).filter((a) => !a.startsWith("--"));
-const opts = { dry: flags.has("--dry") };
+const flags = new Set(argv.filter((a) => a.startsWith("--") && !a.includes("=")));
+const tagValue = readFlagValue(argv, "--tag");
+// Strip flag values from positional list so `--tag X file.md` works.
+const positional = (() => {
+  const out = [];
+  for (let i = 1; i < argv.length; i++) {
+    const a = argv[i];
+    if (a.startsWith("--")) {
+      // Skip flag and (if it took a value via next arg) skip the value too.
+      if (!a.includes("=") && a === "--tag" && i + 1 < argv.length && !argv[i + 1].startsWith("--")) {
+        i++;
+      }
+      continue;
+    }
+    out.push(a);
+  }
+  return out;
+})();
+const opts = { dry: flags.has("--dry"), tag: tagValue };
 
 const COMMANDS = {
   list: () => cmdList(),
