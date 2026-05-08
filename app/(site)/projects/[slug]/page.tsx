@@ -5,6 +5,10 @@ import type { Metadata } from "next";
 
 type Params = { slug: string };
 
+// Match the rest of the (site) routes — render dynamically so writes from
+// outside Next.js (CLI, direct DB edits) appear immediately.
+export const dynamic = "force-dynamic";
+
 // Slugs may include non-ASCII characters. Browsers send them percent-encoded;
 // the DB stores the decoded form, so decode before querying.
 function decodeSlug(raw: string): string {

@@ -8,6 +8,11 @@ import type { Metadata } from "next";
 
 type Params = { slug: string };
 
+// Posts are written by the admin UI AND by a standalone CLI that can't
+// trigger revalidatePath. Render dynamically so any write is reflected on
+// the next request. generateStaticParams is kept for production warm-up.
+export const dynamic = "force-dynamic";
+
 // Slugs may include non-ASCII characters (Chinese). Browsers send them
 // percent-encoded, but our DB stores the decoded form, so decode before
 // querying. Wrap in try/catch to tolerate malformed sequences.

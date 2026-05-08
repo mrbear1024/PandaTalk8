@@ -186,7 +186,7 @@ const MIME = {
   avif: "image/avif",
 };
 
-async function uploadCover(localPath) {
+async function uploadFile(localPath) {
   const buf = await fs.readFile(localPath);
   const ext = path.extname(localPath).toLowerCase().replace(/^\./, "") || "jpg";
   const mime = MIME[ext] || "application/octet-stream";
@@ -206,6 +206,64 @@ async function uploadCover(localPath) {
     })
   );
   return `${publicBase.replace(/\/$/, "")}/${key}`;
+}
+
+// Walk a markdown body, find every local image reference (`![alt](path)` and
+// raw `<img src="path">`), upload each to R2, and rewrite the body to point
+// at the resulting public URL. Returns { body, count }.
+//
+// `sourceDir` is the directory the markdown file lives in — relative paths
+// are resolved against it. URLs (http/https) and data: URIs are skipped.
+// Each unique local path is uploaded only once per call (cached).
+async function uploadInlineImages(body, sourceDir) {
+  const cache = new Map(); // localAbsPath → publicUrl
+  let count = 0;
+
+  async function rewrite(rawPath) {
+    const trimmed = rawPath.trim();
+    if (/^(https?:|data:)/i.test(trimmed)) return null;
+    const cleaned = trimmed.replace(/^["']|["']$/g, "").split(/\s+/)[0]; // strip "title"
+    const abs = path.isAbsolute(cleaned) ? cleaned : path.resolve(sourceDir, cleaned);
+    if (cache.has(abs)) return cache.get(abs);
+    try {
+      await fs.access(abs);
+    } catch {
+      console.warn(`  [img] missing, skipped: ${cleaned}`);
+      cache.set(abs, null);
+      return null;
+    }
+    const url = await uploadFile(abs);
+    cache.set(abs, url);
+    count++;
+    console.log(`  [img] ${cleaned} → ${url}`);
+    return url;
+  }
+
+  // Markdown image syntax: ![alt](url) or ![alt](url "title")
+  const mdRe = /(!\[[^\]]*\]\()([^)]+)(\))/g;
+  const replacements = [];
+  for (const m of body.matchAll(mdRe)) {
+    replacements.push({ match: m, kind: "md" });
+  }
+  // HTML <img src="...">
+  const htmlRe = /(<img\s[^>]*\bsrc=["'])([^"']+)(["'])/gi;
+  for (const m of body.matchAll(htmlRe)) {
+    replacements.push({ match: m, kind: "html" });
+  }
+  replacements.sort((a, b) => a.match.index - b.match.index);
+
+  let out = "";
+  let cursor = 0;
+  for (const { match } of replacements) {
+    const [full, prefix, oldPath, suffix] = match;
+    const start = match.index;
+    out += body.slice(cursor, start);
+    const newUrl = await rewrite(oldPath);
+    out += newUrl ? prefix + newUrl + suffix : full;
+    cursor = start + full.length;
+  }
+  out += body.slice(cursor);
+  return { body: out, count };
 }
 
 // ---------------------------------------------------------------------------
@@ -350,14 +408,35 @@ async function ensureUniqueSlug(db, base) {
   return `${base}-${Date.now()}`;
 }
 
+// Pull the first markdown H1 from a body, if any. Used as a title fallback
+// when frontmatter doesn't supply one — avoids using filenames that have
+// been ASCII-flattened (e.g. "控制反转-AI时代" instead of "控制反转：AI 时代").
+function firstH1(body) {
+  const m = body.match(/^[ \t]*#\s+(.+?)\s*$/m);
+  return m ? m[1].trim() : "";
+}
+
 async function cmdPublish(file, opts = {}) {
   if (!file) throw new Error("usage: blog publish <file.md>");
   const text = await fs.readFile(file, "utf8");
-  const { meta, body } = parseFrontmatter(text);
+  const { meta, body: rawBody } = parseFrontmatter(text);
 
-  const title = (meta.title || path.basename(file, path.extname(file))).trim();
+  const title = (
+    meta.title ||
+    firstH1(rawBody) ||
+    path.basename(file, path.extname(file))
+  ).trim();
   if (!title) throw new Error(`${file}: title is empty`);
-  if (!body.trim()) throw new Error(`${file}: body is empty`);
+  if (!rawBody.trim()) throw new Error(`${file}: body is empty`);
+
+  // Inline images: upload local files to R2 and rewrite the markdown to point
+  // at the public URL. Skipped on dry-run so we don't spam the bucket.
+  let body = rawBody;
+  if (!opts.dry) {
+    const { body: rewritten, count } = await uploadInlineImages(rawBody, path.dirname(file));
+    body = rewritten;
+    if (count > 0) console.log(`  [img] uploaded ${count} inline image(s)`);
+  }
 
   const html = markdownToHtml(body);
   const plain = plainTextFromMarkdown(body);
@@ -379,7 +458,7 @@ async function cmdPublish(file, opts = {}) {
     if (opts.dry) {
       cover = `[dry-run] would upload ${abs}`;
     } else {
-      cover = await uploadCover(abs);
+      cover = await uploadFile(abs);
       console.log(`  [cover] uploaded → ${cover}`);
     }
   }
@@ -454,8 +533,8 @@ async function cmdPublishBatch(dir, opts = {}) {
 async function cmdEdit(slug, file) {
   if (!slug || !file) throw new Error("usage: blog edit <slug> <file.md>");
   const text = await fs.readFile(file, "utf8");
-  const { meta, body } = parseFrontmatter(text);
-  if (!body.trim()) throw new Error(`${file}: body is empty`);
+  const { meta, body: rawBody } = parseFrontmatter(text);
+  if (!rawBody.trim()) throw new Error(`${file}: body is empty`);
 
   const db = getDB();
   const { data: existing, error: e0 } = await db
@@ -465,6 +544,9 @@ async function cmdEdit(slug, file) {
     .maybeSingle();
   if (e0) throw new Error(e0.message);
   if (!existing) throw new Error(`not found: ${slug}`);
+
+  const { body, count } = await uploadInlineImages(rawBody, path.dirname(file));
+  if (count > 0) console.log(`  [img] uploaded ${count} inline image(s)`);
 
   const html = markdownToHtml(body);
   const plain = plainTextFromMarkdown(body);
@@ -482,7 +564,7 @@ async function cmdEdit(slug, file) {
     let cover = (meta.cover || "").trim() || null;
     if (cover && !/^https?:\/\//i.test(cover)) {
       const abs = path.isAbsolute(cover) ? cover : path.resolve(path.dirname(file), cover);
-      cover = await uploadCover(abs);
+      cover = await uploadFile(abs);
       console.log(`  [cover] uploaded → ${cover}`);
     }
     patch.cover = cover;
