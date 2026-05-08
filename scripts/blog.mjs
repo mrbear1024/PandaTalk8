@@ -222,7 +222,11 @@ async function uploadInlineImages(body, sourceDir) {
   async function rewrite(rawPath) {
     const trimmed = rawPath.trim();
     if (/^(https?:|data:)/i.test(trimmed)) return null;
-    const cleaned = trimmed.replace(/^["']|["']$/g, "").split(/\s+/)[0]; // strip "title"
+    // Strip an optional CommonMark title suffix `"title"` or `'title'` —
+    // but only if it's actually quoted; otherwise we'd break paths that
+    // legitimately contain spaces (e.g. macOS "Application Support").
+    let cleaned = trimmed.replace(/\s+(["'])[^"']*\1\s*$/, "");
+    cleaned = cleaned.replace(/^["']|["']$/g, "").trim();
     const abs = path.isAbsolute(cleaned) ? cleaned : path.resolve(sourceDir, cleaned);
     if (cache.has(abs)) return cache.get(abs);
     try {
