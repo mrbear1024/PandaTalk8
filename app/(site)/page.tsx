@@ -103,11 +103,11 @@ export default async function HomePage() {
         {home.showPosts ? <section className="home-section">
           <div className="section-head">
             <div>
-              <div className="eyebrow">Writing</div>
-              <h2>Latest posts</h2>
+              <div className="eyebrow">Articles</div>
+              <h2>Latest articles</h2>
             </div>
             <div className="index">
-              <Link href="/blog">all posts ({posts.length}) →</Link>
+              <Link href="/blog">all articles ({posts.length}) →</Link>
             </div>
           </div>
           <ul className="post-list">

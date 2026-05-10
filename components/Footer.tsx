@@ -8,7 +8,7 @@ export default async function Footer() {
       <div className="inner">
         <div>© {new Date().getFullYear()} {site.brandName} · built with ♥ and Claude</div>
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          <Link href="/blog">blog</Link>
+          <Link href="/blog">articles</Link>
           <Link href="/projects">projects</Link>
           <Link href="/community">community</Link>
           <Link href="/courses">courses</Link>

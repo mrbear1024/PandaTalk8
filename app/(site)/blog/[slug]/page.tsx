@@ -48,7 +48,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
     <div className="route-enter container-narrow">
       <article className="article">
         <Link href="/blog" className="back-link">
-          all posts
+          all articles
         </Link>
         {post.cover ? (
           <div className="article-cover">

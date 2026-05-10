@@ -16,14 +16,14 @@ const SYSTEM_PROMPT = `You generate metadata for a personal bilingual (中/英) 
 
 For each post, choose:
 
-- A short Chinese slug — 2 to 4 short Chinese keywords joined by ASCII hyphens.
-  - Example: title "AI 如何改变人的劳动？" → slug "ai-改变-劳动" or "ai-劳动变革".
-  - Example: title "Git 入门教程" → slug "git-入门-教程".
-  - Use Chinese keywords that capture the topic, not the full title verbatim.
-  - ASCII tokens (like product names: ai, git, openai, react) stay lowercase.
-  - No spaces, no punctuation other than hyphens, no leading/trailing hyphens.
-  - If the post is purely English with no Chinese content, fall back to ASCII
-    kebab-case (2–5 lowercase words, e.g. "claude-code-workflow").
+- A short English slug in ASCII kebab-case.
+  - Use 2 to 5 English words that capture the topic.
+  - Translate Chinese titles into concise English keywords.
+  - Allowed characters: lowercase English letters and ASCII hyphens only.
+  - No Chinese characters, digits, spaces, underscores, punctuation, or leading/trailing hyphens.
+  - Example: title "AI 如何改变人的劳动？" → slug "ai-labor-change".
+  - Example: title "Git 入门教程" → slug "git-beginner-guide".
+  - Example: title "Claude Code Workflow" → slug "claude-code-workflow".
 
 - One tag from this fixed taxonomy:
   - "essay" — first-person reflective writing, life/career narrative
@@ -84,7 +84,7 @@ export async function generateSlugAndTag(
                 slug: {
                   type: "string",
                   description:
-                    "Chinese-preferred slug: 2–4 short Chinese keywords joined by ASCII hyphens (e.g. 'ai-改变-劳动'). ASCII product names stay lowercase. No spaces, no punctuation other than hyphens. Pure-English posts may use ASCII kebab-case.",
+                    "English ASCII kebab-case slug, 2-5 lowercase words. Only a-z and hyphens are allowed. No Chinese characters, digits, spaces, underscores, or punctuation.",
                 },
                 tag: { type: "string", enum: [...TAGS] },
               },

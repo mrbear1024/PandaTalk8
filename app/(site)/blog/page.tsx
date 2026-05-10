@@ -2,7 +2,7 @@ import BlogTagFilter from "@/components/BlogTagFilter";
 import { getAllPosts } from "@/lib/posts";
 
 export const metadata = {
-  title: "Blog · PandaTalk8",
+  title: "Articles · PandaTalk8",
   description: "Long-form notes on indie building, AI, and the slow process of learning to make things in public.",
 };
 
@@ -18,12 +18,12 @@ export default async function BlogIndexPage() {
     <div className="route-enter container">
       <section className="page-intro">
         <div>
-          <div className="num">§ 01 — writing</div>
+          <div className="num">§ 01 — articles</div>
           <h1>
             The
             <br />
             <span className="serif" style={{ fontStyle: "italic", color: "var(--panda-red-deep)" }}>
-              Notes
+              Articles
             </span>
           </h1>
         </div>

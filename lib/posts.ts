@@ -1,4 +1,4 @@
-import { getSupabase, getSupabaseNoStore, isSupabaseConfigured } from "./supabase";
+import { getSupabase, getSupabaseNoStore, getSupabaseTagged, isSupabaseConfigured } from "./supabase";
 import { SEED_POSTS } from "./seed";
 import type { Post } from "./types";
 
@@ -62,7 +62,7 @@ export async function getPost(slug: string): Promise<Post | null> {
   if (!isSupabaseConfigured) {
     return SEED_POSTS.find((p) => p.slug === slug) ?? null;
   }
-  const sb = getSupabase()!;
+  const sb = getSupabaseTagged([`post:${slug}`])!;
   const { data, error } = await sb.from("posts").select("*").eq("slug", slug).maybeSingle();
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);

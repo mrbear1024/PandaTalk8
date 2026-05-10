@@ -39,9 +39,20 @@ async function ensureUniqueSlug(base: string): Promise<string> {
   for (let i = 2; i < 50; i++) {
     const { data } = await sb.from("posts").select("slug").eq("slug", candidate).maybeSingle();
     if (!data) return candidate;
-    candidate = `${base}-${i}`;
+    candidate = `${base}-${letterSuffix(i)}`;
   }
-  return `${base}-${Date.now()}`;
+  return `${base}-${letterSuffix(Date.now())}`;
+}
+
+function letterSuffix(n: number): string {
+  let value = Math.max(1, n - 1);
+  let suffix = "";
+  while (value > 0) {
+    value -= 1;
+    suffix = String.fromCharCode(97 + (value % 26)) + suffix;
+    value = Math.floor(value / 26);
+  }
+  return suffix;
 }
 
 function noticeQuery(meta: AiMetaResult): string {

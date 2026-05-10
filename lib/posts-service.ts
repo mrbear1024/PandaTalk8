@@ -1,5 +1,5 @@
 import "server-only";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { marked } from "marked";
 import { getAdminSupabase } from "./supabase-admin";
 import { generateSlugAndTag } from "./ai-meta";
@@ -84,15 +84,27 @@ async function ensureUniqueSlug(base: string): Promise<string> {
   for (let i = 2; i < 50; i++) {
     const { data } = await sb.from("posts").select("slug").eq("slug", candidate).maybeSingle();
     if (!data) return candidate;
-    candidate = `${base}-${i}`;
+    candidate = `${base}-${letterSuffix(i)}`;
   }
-  return `${base}-${Date.now()}`;
+  return `${base}-${letterSuffix(Date.now())}`;
+}
+
+function letterSuffix(n: number): string {
+  let value = Math.max(1, n - 1);
+  let suffix = "";
+  while (value > 0) {
+    value -= 1;
+    suffix = String.fromCharCode(97 + (value % 26)) + suffix;
+    value = Math.floor(value / 26);
+  }
+  return suffix;
 }
 
 function bustCaches(slug: string) {
   revalidatePath("/");
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
+  revalidateTag(`post:${slug}`);
 }
 
 export async function createPost(input: CreatePostInput): Promise<Post> {

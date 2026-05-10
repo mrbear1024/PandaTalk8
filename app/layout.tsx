@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           rel="alternate"
           type="application/rss+xml"
-          title="PandaTalk Blog RSS"
+          title="PandaTalk Articles RSS"
           href="/blog/rss.xml"
         />
         <ThemeBootScript />

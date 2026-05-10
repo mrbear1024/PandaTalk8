@@ -1,24 +1,21 @@
 import type { PostBodyBlock } from "./types";
 
-// Slug character ranges:
-//   a-z 0-9                                 ASCII alnum
-//   一-鿿                           CJK Unified Ideographs
-//   㐀-䶿                           CJK Unified Ext A
-//   豈-﫿                           CJK Compatibility Ideographs
-// Anything else (CJK punctuation like ，。！？、；：（）"" '' — and ASCII
-// punctuation other than -) is stripped. Whitespace collapses to a single
-// hyphen.
+// Public post slugs are intentionally ASCII-only for portable URLs.
+// Allowed characters: lowercase English letters and ASCII hyphens.
 export function slugify(title: string): string {
-  return title
+  const slug = title
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
-    .replace(/[^a-z0-9一-鿿㐀-䶿豈-﫿\s-]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 80) || `post-${Date.now()}`;
+    .slice(0, 80)
+    .replace(/-+$/g, "");
+  return slug || "post";
 }
 
 export function deriveReadTime(blocks: PostBodyBlock[]): string {

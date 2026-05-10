@@ -33,10 +33,10 @@ export default function BlogTagFilter({ posts }: { posts: Post[] }) {
           <input
             type="search"
             className="blog-search-input"
-            placeholder="Search posts…"
+            placeholder="Search articles..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search posts"
+            aria-label="Search articles"
           />
           {query ? (
             <button
@@ -77,13 +77,13 @@ export default function BlogTagFilter({ posts }: { posts: Post[] }) {
           );
         })}
         <span className="blog-count">
-          {list.length} {list.length === 1 ? "post" : "posts"}
+          {list.length} {list.length === 1 ? "article" : "articles"}
         </span>
       </div>
 
       {list.length === 0 ? (
         <p className="muted" style={{ marginTop: "var(--sp-6)" }}>
-          No posts match &ldquo;{query}&rdquo;.
+          No articles match &ldquo;{query}&rdquo;.
         </p>
       ) : (
         <>

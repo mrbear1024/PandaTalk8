@@ -34,3 +34,13 @@ export function getSupabaseNoStore(): SupabaseClient | null {
   });
   return noStoreCached;
 }
+
+export function getSupabaseTagged(tags: string[]): SupabaseClient | null {
+  if (!isSupabaseConfigured) return null;
+  const taggedFetch: typeof fetch = (input, init) =>
+    fetch(input, { ...init, next: { tags } });
+  return createClient(url!, anonKey!, {
+    auth: { persistSession: false },
+    global: { fetch: taggedFetch },
+  });
+}
