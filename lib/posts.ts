@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "./supabase";
+import { getSupabase, getSupabaseNoStore, isSupabaseConfigured } from "./supabase";
 import { SEED_POSTS } from "./seed";
 import type { Post } from "./types";
 
@@ -36,7 +36,7 @@ export async function getAllPosts(): Promise<Post[]> {
 
 export async function getAllPostsWithBody(): Promise<Post[]> {
   if (!isSupabaseConfigured) return SEED_POSTS;
-  const sb = getSupabase()!;
+  const sb = getSupabaseNoStore()!;
   const { data, error } = await sb
     .from("posts")
     .select("*")

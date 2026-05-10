@@ -8,6 +8,13 @@ const anonKey =
 export const isSupabaseConfigured = Boolean(url && anonKey);
 
 let cached: SupabaseClient | null = null;
+let noStoreCached: SupabaseClient | null = null;
+
+const noStoreFetch: typeof fetch = (input, init) =>
+  fetch(input, {
+    ...init,
+    cache: "no-store",
+  });
 
 export function getSupabase(): SupabaseClient | null {
   if (!isSupabaseConfigured) return null;
@@ -16,4 +23,14 @@ export function getSupabase(): SupabaseClient | null {
     auth: { persistSession: false },
   });
   return cached;
+}
+
+export function getSupabaseNoStore(): SupabaseClient | null {
+  if (!isSupabaseConfigured) return null;
+  if (noStoreCached) return noStoreCached;
+  noStoreCached = createClient(url!, anonKey!, {
+    auth: { persistSession: false },
+    global: { fetch: noStoreFetch },
+  });
+  return noStoreCached;
 }
