@@ -408,8 +408,19 @@ nav.primary a {
   font-feature-settings: "liga" 0, "calt" 0;
 }
 nav.primary a:hover { color: var(--ink); }
+nav.primary a .nav-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.4;
+  flex: 0 0 auto;
+}
+nav.primary a:hover .nav-icon { opacity: 0.7; }
 nav.primary a.active {
   color: var(--panda-red-deep);
+}
+nav.primary a.active .nav-icon {
+  opacity: 0.8;
+  color: var(--panda-red);
 }
 nav.primary a.active::before {
   content: "▸";
