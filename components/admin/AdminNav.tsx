@@ -10,6 +10,7 @@ const items = [
   { href: "/admin/projects", label: "projects" },
   { href: "/admin/communities", label: "communities" },
   { href: "/admin/courses", label: "courses" },
+  { href: "/admin/settings", label: "settings" },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {

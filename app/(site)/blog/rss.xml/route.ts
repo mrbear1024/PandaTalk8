@@ -1,5 +1,5 @@
-import { getAllPosts } from "@/lib/posts";
-import { SITE } from "@/lib/site";
+import { getAllPostsWithBody } from "@/lib/posts";
+import { getSiteSettings } from "@/lib/site-settings";
 import type { Post } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,8 @@ function toRfc822(date: string): string {
 }
 
 export async function GET() {
-  const posts = await getAllPosts();
+  const [posts, settings] = await Promise.all([getAllPostsWithBody(), getSiteSettings()]);
+  const { site } = settings;
   const origin = siteOrigin();
   const updated = posts[0]?.date ? toRfc822(posts[0].date) : new Date().toUTCString();
 
@@ -64,9 +65,9 @@ export async function GET() {
     `<?xml version="1.0" encoding="UTF-8"?>` +
     `<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">` +
     `<channel>` +
-    `<title>${escapeXml(SITE.name)}</title>` +
+    `<title>${escapeXml(site.name)}</title>` +
     `<link>${origin}</link>` +
-    `<description>${escapeXml(SITE.tagline)}</description>` +
+    `<description>${escapeXml(site.tagline)}</description>` +
     `<language>en</language>` +
     `<lastBuildDate>${updated}</lastBuildDate>` +
     `<atom:link href="${origin}/blog/rss.xml" rel="self" type="application/rss+xml" />` +

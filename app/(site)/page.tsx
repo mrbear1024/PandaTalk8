@@ -8,7 +8,7 @@ import { getAllCommunities } from "@/lib/communities";
 import { getAllCourses } from "@/lib/courses";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
-import { SITE } from "@/lib/site";
+import { getSiteSettings } from "@/lib/site-settings";
 
 // Posts/projects are written by both the admin UI (which calls revalidatePath)
 // and a standalone CLI (scripts/blog.mjs) which can't. Dynamic rendering means
@@ -22,6 +22,7 @@ export default async function HomePage() {
     getAllCommunities(),
     getAllCourses(),
   ]);
+  const { site, home } = await getSiteSettings();
   const featuredPosts = posts.filter((p) => p.featured).slice(0, 1);
   const latestPosts = posts.filter((p) => !p.featured).slice(0, 3);
   const featuredProjects = projects.slice(0, 3);
@@ -32,29 +33,29 @@ export default async function HomePage() {
       <section className="container home">
         <div className="home-hero">
           <div className="home-hero-copy">
-            <div className="kicker">online · building in public</div>
+            <div className="kicker">{home.kicker}</div>
             <h1 className="home-title">
-              AI builder &amp;{" "}
-              <span className="stroke">indie founder</span>.
+              {home.title}{" "}
+              <span className="stroke">{home.titleAccent}</span>.
             </h1>
             <p className="home-lede">
-              Building products, writing ideas, and selling myself in public.
+              {home.lede}
             </p>
             <div className="hero-actions">
-              <a href={SITE.xUrl} target="_blank" rel="noopener noreferrer" className="btn">
-                Follow {SITE.xHandle} →
+              <a href={home.primaryCtaHref} target="_blank" rel="noopener noreferrer" className="btn">
+                {home.primaryCtaLabel}
               </a>
-              <Link href="/about#wechat" className="btn ghost">
-                订阅公众号
+              <Link href={home.secondaryCtaHref} className="btn ghost">
+                {home.secondaryCtaLabel}
               </Link>
             </div>
             <div className="trust-strip">
-              <strong>{SITE.xFollowers}</strong> followers on X <span>·</span> 公众号 {SITE.wechatName}
+              <strong>{site.xFollowers}</strong> followers on X <span>·</span> 公众号 {site.wechatName}
             </div>
             <div className="now-bar">
               <span className="dot" />
-              <span className="label">{SITE.now.status}</span>
-              <span>{SITE.now.text}</span>
+              <span className="label">{site.now.status}</span>
+              <span>{site.now.text}</span>
             </div>
           </div>
           <div className="home-hero-portrait">
@@ -65,38 +66,24 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="home-socials" aria-label="Social media">
-          <a href={SITE.xUrl} target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-icon"><SocialIcon kind="x" /></span>
-            <span className="home-social-text">
-              <span className="home-social-label">X</span>
-              <span className="home-social-handle">{SITE.xHandle}</span>
-            </span>
-          </a>
-          <Link href="/about#wechat" className="home-social">
-            <span className="home-social-icon"><SocialIcon kind="substack" /></span>
-            <span className="home-social-text">
-              <span className="home-social-label">公众号</span>
-              <span className="home-social-handle">{SITE.wechatName}</span>
-            </span>
-          </Link>
-          <a href="https://www.youtube.com/@pandatalk8" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-icon"><SocialIcon kind="youtube" /></span>
-            <span className="home-social-text">
-              <span className="home-social-label">YouTube</span>
-              <span className="home-social-handle">@pandatalk8</span>
-            </span>
-          </a>
-          <a href="https://github.com/mrbear1024" target="_blank" rel="noopener noreferrer" className="home-social">
-            <span className="home-social-icon"><SocialIcon kind="github" /></span>
-            <span className="home-social-text">
-              <span className="home-social-label">GitHub</span>
-              <span className="home-social-handle">mrbear1024</span>
-            </span>
-          </a>
-        </div>
+        {home.showSocials ? (
+          <section className="home-social-block" aria-labelledby="home-social-title">
+            <div className="eyebrow" id="home-social-title">{home.socialsTitle}</div>
+            <div className="home-socials" aria-label="Social media">
+              {site.socials.slice(0, 4).map((social) => (
+                <a key={`${social.label}-${social.href}`} href={social.href} target="_blank" rel="noopener noreferrer" className="home-social">
+                  <span className="home-social-icon"><SocialIcon kind={social.label.toLowerCase()} /></span>
+                  <span className="home-social-text">
+                    <span className="home-social-label">{social.label}</span>
+                    <span className="home-social-handle">{social.handle}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="home-section">
+        {home.showCommunities ? <section className="home-section">
           <div className="section-head">
             <div>
               <div className="eyebrow">Community</div>
@@ -111,9 +98,9 @@ export default async function HomePage() {
               <CommunityCard key={community.slug} community={community} />
             ))}
           </div>
-        </section>
+        </section> : null}
 
-        <section className="home-section">
+        {home.showPosts ? <section className="home-section">
           <div className="section-head">
             <div>
               <div className="eyebrow">Writing</div>
@@ -131,9 +118,9 @@ export default async function HomePage() {
               <PostRow key={p.slug} post={p} />
             ))}
           </ul>
-        </section>
+        </section> : null}
 
-        <section className="home-section">
+        {home.showProjects ? <section className="home-section">
           <div className="section-head">
             <div>
               <div className="eyebrow">Projects</div>
@@ -148,9 +135,9 @@ export default async function HomePage() {
               <ProjectCard key={p.slug} project={p} />
             ))}
           </div>
-        </section>
+        </section> : null}
 
-        {featuredCourses.length > 0 ? (
+        {home.showCourses && featuredCourses.length > 0 ? (
           <section className="home-section">
             <div className="section-head">
               <div>

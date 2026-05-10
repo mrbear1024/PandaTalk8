@@ -1,6 +1,6 @@
 import CommunityCard from "@/components/CommunityCard";
 import { getAllCommunities } from "@/lib/communities";
-import { SITE } from "@/lib/site";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "Community · PandaTalk8",
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CommunityPage() {
   const communities = await getAllCommunities();
+  const { site } = await getSiteSettings();
 
   return (
     <div className="route-enter container">
@@ -26,7 +27,7 @@ export default async function CommunityPage() {
           </h1>
         </div>
         <div className="side">
-          Communities for AI builders, indie founders, and people growing on X. 公众号：{SITE.wechatName}.
+          Communities for AI builders, indie founders, and people growing on X. 公众号：{site.wechatName}.
         </div>
       </section>
 
@@ -40,7 +41,7 @@ export default async function CommunityPage() {
         <div className="empty-state">
           <div className="empty-glyph" aria-hidden="true">¥</div>
           <h2 className="empty-title">Communities coming soon</h2>
-          <p className="empty-copy">微信搜索公众号：{SITE.wechatName}</p>
+          <p className="empty-copy">微信搜索公众号：{site.wechatName}</p>
         </div>
       )}
     </div>

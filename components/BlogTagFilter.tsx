@@ -4,12 +4,6 @@ import { useMemo, useState } from "react";
 import PostRow from "./PostRow";
 import type { Post } from "@/lib/types";
 
-function bodyToText(body: Post["body"]): string {
-  if (!body) return "";
-  if (typeof body === "string") return body.replace(/<[^>]+>/g, " ");
-  return body.map((b) => b.text).join(" ");
-}
-
 export default function BlogTagFilter({ posts }: { posts: Post[] }) {
   const [filter, setFilter] = useState<string>("all");
   const [query, setQuery] = useState<string>("");
@@ -21,7 +15,7 @@ export default function BlogTagFilter({ posts }: { posts: Post[] }) {
     return posts.filter((p) => {
       if (filter !== "all" && p.tag !== filter) return false;
       if (!q) return true;
-      const haystack = [p.title, p.excerpt, p.tag, bodyToText(p.body)]
+      const haystack = [p.title, p.excerpt, p.tag, p.lang]
         .join(" ")
         .toLowerCase();
       return haystack.includes(q);

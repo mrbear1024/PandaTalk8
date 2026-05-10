@@ -10,6 +10,8 @@ export const SITE: Site = {
   xUrl: "https://x.com/PandaTalk8",
   xFollowers: "74.9K",
   wechatName: "PandaTalk8",
+  wechatQr: "/assets/wechat/qrcode-pandatalk8.jpg",
+  wechatMaterial: "/assets/wechat/material-2.png",
   domain: "pandatalk8.com",
   socials: [
     { label: "X", handle: "@PandaTalk8", href: "https://x.com/PandaTalk8" },
@@ -63,4 +65,21 @@ export const ABOUT: About = {
     { year: "2018–2024", what: "Backend engineer at a large tech company", detail: "Six years of Go. Led an eight-person team." },
     { year: "2014", what: "First time writing code", detail: "Freshman year. Built a campus used-book trading site." },
   ],
+};
+
+export const HOME = {
+  kicker: "online · building in public",
+  title: "AI builder &",
+  titleAccent: "indie founder",
+  lede: "Building products, writing ideas, and selling myself in public.",
+  primaryCtaLabel: "Follow @PandaTalk8 →",
+  primaryCtaHref: "https://x.com/PandaTalk8",
+  secondaryCtaLabel: "订阅公众号",
+  secondaryCtaHref: "/about#wechat",
+  socialsTitle: "Follow the build",
+  showSocials: true,
+  showCommunities: true,
+  showPosts: true,
+  showProjects: true,
+  showCourses: true,
 };

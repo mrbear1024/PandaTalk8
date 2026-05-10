@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import WechatPromo from "@/components/WechatPromo";
 import { getAllCommunities, getCommunity } from "@/lib/communities";
-import { SITE } from "@/lib/site";
+import { getSiteSettings } from "@/lib/site-settings";
 import type { Metadata } from "next";
 
 type Params = { slug: string };
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function CommunityDetailPage({ params }: { params: Params }) {
   const community = await getCommunity(decodeSlug(params.slug));
   if (!community) notFound();
+  const { site } = await getSiteSettings();
 
   return (
     <div className="route-enter container-narrow">
@@ -78,9 +80,10 @@ export default async function CommunityDetailPage({ params }: { params: Params }
           <div className="join-box" id="join">
             <div>
               <strong>{community.cta_label}</strong>
-              <p>微信搜索公众号：{SITE.wechatName}，按页面说明发送关键词。</p>
+              <p>微信搜索公众号：{site.wechatName}，按页面说明发送关键词。</p>
             </div>
           </div>
+          <WechatPromo compact />
           {community.faq.length > 0 ? (
             <>
               <h2>FAQ</h2>

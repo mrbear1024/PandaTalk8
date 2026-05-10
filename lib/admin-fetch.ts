@@ -1,6 +1,7 @@
 import "server-only";
 import { getAdminSupabase } from "./supabase-admin";
-import type { Community, Course, Post, Project } from "./types";
+import { DEFAULT_SITE_SETTINGS } from "./site-settings";
+import type { Community, Course, Post, Project, SiteSettings } from "./types";
 
 export async function adminListPosts(): Promise<Post[]> {
   const sb = getAdminSupabase();
@@ -86,4 +87,31 @@ export async function adminGetCourse(slug: string): Promise<Course | null> {
   const { data, error } = await sb.from("courses").select("*").eq("slug", slug).maybeSingle();
   if (error) throw new Error(error.message);
   return (data as Course) ?? null;
+}
+
+export async function adminGetSiteSettings(): Promise<SiteSettings> {
+  const sb = getAdminSupabase();
+  const { data, error } = await sb
+    .from("site_settings")
+    .select("*")
+    .eq("id", "main")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return DEFAULT_SITE_SETTINGS;
+  return {
+    site: {
+      ...DEFAULT_SITE_SETTINGS.site,
+      ...(data.site ?? {}),
+      socials: data.socials?.length ? data.socials : DEFAULT_SITE_SETTINGS.site.socials,
+      now: {
+        ...DEFAULT_SITE_SETTINGS.site.now,
+        ...(data.site?.now ?? {}),
+      },
+    },
+    about: data.about ?? DEFAULT_SITE_SETTINGS.about,
+    home: {
+      ...DEFAULT_SITE_SETTINGS.home,
+      ...(data.home ?? {}),
+    },
+  };
 }

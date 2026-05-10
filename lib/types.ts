@@ -18,7 +18,7 @@ export type Post = {
   tag: string;
   title: string;
   excerpt: string;
-  body: PostBodyBlock[] | string | null;
+  body?: PostBodyBlock[] | string | null;
   cover?: string | null;
   featured?: boolean | null;
 };
@@ -99,6 +99,8 @@ export type Site = {
   xUrl: string;
   xFollowers: string;
   wechatName: string;
+  wechatQr: string;
+  wechatMaterial: string;
   domain: string;
   socials: Social[];
   now: { status: string; text: string };
@@ -118,4 +120,27 @@ export type TimelineEntry = {
 export type About = {
   sections: AboutSection[];
   timeline: TimelineEntry[];
+};
+
+export type HomeSettings = {
+  kicker: string;
+  title: string;
+  titleAccent: string;
+  lede: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  socialsTitle: string;
+  showSocials: boolean;
+  showCommunities: boolean;
+  showPosts: boolean;
+  showProjects: boolean;
+  showCourses: boolean;
+};
+
+export type SiteSettings = {
+  site: Site;
+  about: About;
+  home: HomeSettings;
 };
