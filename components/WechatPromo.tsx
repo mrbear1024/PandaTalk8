@@ -3,7 +3,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 export default async function WechatPromo({ compact = false }: { compact?: boolean }) {
   const { site } = await getSiteSettings();
   return (
-    <div className={`wechat-promo${compact ? " compact" : ""}`}>
+    <div id="wechat" className={`wechat-promo${compact ? " compact" : ""}`}>
       <div className="wechat-promo-copy">
         <div className="eyebrow">WeChat</div>
         <h2>订阅公众号 {site.wechatName}</h2>

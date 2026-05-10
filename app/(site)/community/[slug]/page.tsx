@@ -77,6 +77,12 @@ export default async function CommunityDetailPage({ params }: { params: Params }
           </ul>
           <h2>加入方式</h2>
           <p>{community.join_instructions}</p>
+          {community.cover ? (
+            <div className="community-qr-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={community.cover} alt={`${community.name} 二维码`} />
+            </div>
+          ) : null}
           <div className="join-box" id="join">
             <div>
               <strong>{community.cta_label}</strong>

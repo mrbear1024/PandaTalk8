@@ -129,10 +129,10 @@ create index if not exists courses_status_idx on courses (status);
 
 -- Seed the 2.0 commercial content. These are safe to re-run.
 insert into communities (
-  slug, name, subtitle, price, currency, description, audience, highlights, includes,
+  slug, name, subtitle, price, currency, cover, description, audience, highlights, includes,
   faq, join_instructions, cta_label, sort_order, featured, status
 ) values
-('x-growth-wechat', 'X 增长微信群', 'Flagship community for X growth and monetization.', '789', '¥',
+('x-growth-wechat', 'X 增长微信群', 'Flagship community for X growth and monetization.', '789', '¥', null,
  '面向想系统做 X 增长、内容定位和商业化的创作者与独立开发者。',
  '适合已经开始发 X，想把内容增长变成产品、社群或商业机会的人。',
  array['账号定位与内容策略','X 增长案例拆解','商业化路径与产品化思路'],
@@ -140,23 +140,38 @@ insert into communities (
  '[{"q":"适合零基础吗？","a":"更适合已经准备认真做 X 的人；完全零基础可以先看 X 冷启动成长群。"}]'::jsonb,
  '微信搜索公众号 PandaTalk8，发送「X增长」获取加入方式。',
  '查看加入方式', 1, true, 'published'),
-('ai-learning-circle', '熊老板的 AI 学习圈', 'AI tools, workflows, and practical learning notes.', '199', '¥',
- '持续学习 AI 工具、工作流、产品案例和创作者实践。',
+('ai-learning-circle', '熊老板的 AI 学习圈', 'AI tools, workflows, and practical learning notes.', '199', '¥', '/assets/communities/ai-learning-circle.png',
+ '熊老板的 AI 学习圈是知识星球社群，持续分享 AI 工具、工作流、产品案例和创作者实践。',
  '适合 AI 学习者、内容创作者、独立开发者和想提升生产力的人。',
  array['AI 工具与工作流','产品案例拆解','学习资料与实践笔记'],
  array['知识星球内容','AI 案例分享','工具清单','学习路径'],
  '[{"q":"内容偏技术吗？","a":"不只面向程序员，更关注 AI 如何进入真实工作流和产品实践。"}]'::jsonb,
- '微信搜索公众号 PandaTalk8，发送「AI学习圈」获取加入方式。',
+ '微信扫码加入知识星球「熊老板的 AI 学习圈」，或搜索公众号 PandaTalk8 发送「AI学习圈」获取加入方式。',
  '查看加入方式', 2, false, 'published'),
-('x-cold-start', 'X 冷启动成长群', 'Low-friction starter path for building on X.', '79', '¥',
- '低价入门产品，帮助刚开始做 X 的人完成账号定位、第一批内容、早期互动和冷启动节奏。',
+('x-cold-start', 'X 冷启动成长群', 'Low-friction starter path for building on X.', '79', '¥', '/assets/communities/x-cold-start.png',
+ 'X 冷启动成长群是知识星球低价入门社群，帮助刚开始做 X 的人完成账号定位、第一批内容、早期互动和冷启动节奏。',
  '适合刚开始做 X，想用较低门槛建立基础方法的人。',
  array['0 到 1 冷启动','账号基础搭建','早期内容节奏'],
  array['成长群交流','冷启动资料','基础方法论','常见问题答疑'],
  '[{"q":"和 789 元微信群有什么区别？","a":"这个是低价入门，旗舰微信群更适合系统增长和商业化。"}]'::jsonb,
- '微信搜索公众号 PandaTalk8，发送「冷启动」获取加入方式。',
+ '微信扫码加入知识星球「X 冷启动成长群」，或搜索公众号 PandaTalk8 发送「冷启动」获取加入方式。',
  '查看加入方式', 3, false, 'published')
 on conflict (slug) do nothing;
+
+-- Keep existing seeded communities in sync when this script is re-run on a live database.
+update communities
+set
+  cover = '/assets/communities/ai-learning-circle.png',
+  description = '熊老板的 AI 学习圈是知识星球社群，持续分享 AI 工具、工作流、产品案例和创作者实践。',
+  join_instructions = '微信扫码加入知识星球「熊老板的 AI 学习圈」，或搜索公众号 PandaTalk8 发送「AI学习圈」获取加入方式。'
+where slug = 'ai-learning-circle';
+
+update communities
+set
+  cover = '/assets/communities/x-cold-start.png',
+  description = 'X 冷启动成长群是知识星球低价入门社群，帮助刚开始做 X 的人完成账号定位、第一批内容、早期互动和冷启动节奏。',
+  join_instructions = '微信扫码加入知识星球「X 冷启动成长群」，或搜索公众号 PandaTalk8 发送「冷启动」获取加入方式。'
+where slug = 'x-cold-start';
 
 insert into courses (
   slug, title, subtitle, description, price, status, external_url, cta_label, sort_order, featured

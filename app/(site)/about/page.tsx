@@ -71,7 +71,7 @@ export default async function AboutPage() {
                 <span className="k">X followers</span>
                 <span className="v">{site.xFollowers}</span>
               </div>
-              <div className="row" id="wechat">
+              <div className="row">
                 <span className="k">公众号</span>
                 <span className="v">{site.wechatName}</span>
               </div>

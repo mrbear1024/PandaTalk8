@@ -21,7 +21,8 @@ export async function getAllCommunities(): Promise<Community[]> {
     console.warn("[communities] supabase error, falling back to seed:", error.message);
     return sortCommunities(SEED_COMMUNITIES);
   }
-  return (data ?? []) as Community[];
+  if (!data || data.length === 0) return sortCommunities(SEED_COMMUNITIES);
+  return data as Community[];
 }
 
 export async function getCommunity(slug: string): Promise<Community | null> {
