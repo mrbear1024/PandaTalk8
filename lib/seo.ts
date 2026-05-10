@@ -6,8 +6,6 @@ const FALLBACK_SITE_URL = "https://pandatalk8.com";
 
 export const siteUrl = normalizeSiteUrl(
   process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_VERCEL_URL ||
     FALLBACK_SITE_URL
 );
 
