@@ -8,6 +8,13 @@
       "when": 1760000000000,
       "tag": "0000_pandatalk8_2_0",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778378400000,
+      "tag": "0001_backfill_community_covers",
+      "breakpoints": true
     }
   ]
 }
