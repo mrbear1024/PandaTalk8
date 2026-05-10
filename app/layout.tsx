@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeBootScript from "@/components/ThemeBootScript";
+import { baseMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "PandaTalk8 · Mr Panda",
-  description: "AI builder & indie founder. Building products, writing ideas, and selling myself in public.",
-  icons: { icon: "/assets/panda-avatar.png" },
-};
+export const metadata: Metadata = baseMetadata();
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

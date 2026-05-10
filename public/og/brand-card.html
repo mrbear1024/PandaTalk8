@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1" />
+    <title>Mr Panda OG Card</title>
+    <style>
+      @font-face {
+        font-family: "SpectralLocal";
+        src: url("/fonts/Spectral-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      :root {
+        --bg: #f7f1e5;
+        --paper: #fbf6ea;
+        --ink: #1f1d1a;
+        --muted: #766f64;
+        --rule: #cfc3aa;
+        --red: #b44927;
+        --green: #24643f;
+        --shadow: #191714;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .card {
+        position: relative;
+        width: 1120px;
+        height: 550px;
+        padding: 44px 64px;
+        border: 2px solid var(--rule);
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 12% 12%, rgba(180, 73, 39, 0.08), transparent 30%),
+          radial-gradient(circle at 82% 76%, rgba(36, 100, 63, 0.08), transparent 34%),
+          var(--paper);
+        box-shadow: 0 28px 70px rgba(31, 29, 26, 0.12);
+      }
+
+      .topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+        margin-bottom: 36px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .avatar {
+        width: 84px;
+        height: 84px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        overflow: hidden;
+        background: #efe6d3;
+        box-shadow: 5px 5px 0 var(--red);
+      }
+
+      .avatar img {
+        width: 130%;
+        height: 130%;
+        margin: -15%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .name {
+        display: grid;
+        gap: 6px;
+      }
+
+      .name strong {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 40px;
+        line-height: 0.95;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      .name span,
+      .handle {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .handle {
+        padding: 13px 18px;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.32);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1fr 270px;
+        align-items: center;
+        gap: 64px;
+      }
+
+      h1 {
+        max-width: 700px;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 70px;
+        line-height: 0.98;
+        font-weight: 500;
+        letter-spacing: -0.035em;
+      }
+
+      em {
+        color: var(--red);
+        font-style: italic;
+      }
+
+      .lede {
+        max-width: 650px;
+        margin: 24px 0 0;
+        color: #3f3932;
+        font-family: "SpectralLocal", Georgia, serif;
+        font-size: 28px;
+        line-height: 1.28;
+      }
+
+      .proof {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 20px;
+      }
+
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+
+      .signal-card {
+        width: 290px;
+        padding: 26px 26px 24px;
+        border: 3px solid var(--ink);
+        border-radius: 18px;
+        background: #f3ead8;
+        box-shadow: 8px 8px 0 var(--red);
+      }
+
+      .signal-kicker {
+        color: var(--red);
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .signal-title {
+        margin-top: 12px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 32px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+
+      .signal-list {
+        display: grid;
+        gap: 11px;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px dashed var(--rule);
+        color: #3f3932;
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .signal-item {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .signal-item::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        flex: 0 0 auto;
+      }
+
+      .domain {
+        margin-top: 20px;
+        padding: 10px 14px;
+        border: 1px dashed var(--rule);
+        color: var(--muted);
+        font-size: 17px;
+        letter-spacing: 0.06em;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" aria-label="Mr Panda brand Open Graph preview">
+      <section class="topline">
+        <div class="brand">
+          <div class="avatar">
+            <img src="/assets/panda-avatar.png" alt="" />
+          </div>
+          <div class="name">
+            <strong>Mr Panda</strong>
+            <span>AI Builder · Indie Maker</span>
+          </div>
+        </div>
+        <div class="handle">@PandaTalk8</div>
+      </section>
+
+      <section class="content">
+        <div>
+          <h1>AI builder &<br /><em>indie founder.</em></h1>
+          <p class="lede">Building products, writing ideas, and selling myself in public.</p>
+          <div class="proof">
+            <span class="dot" aria-hidden="true"></span>
+            <strong>74.9K followers on X</strong>
+            <span>·</span>
+            <span>公众号 PandaTalk8</span>
+          </div>
+        </div>
+
+        <aside class="signal-card" aria-label="PandaTalk8 focus">
+          <div class="signal-kicker">PandaTalk8</div>
+          <div class="signal-title">Build in public.</div>
+          <div class="signal-list">
+            <div class="signal-item">AI products</div>
+            <div class="signal-item">X growth</div>
+            <div class="signal-item">Paid communities</div>
+            <div class="signal-item">Long-form articles</div>
+          </div>
+          <div class="domain">pandatalk8.com</div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

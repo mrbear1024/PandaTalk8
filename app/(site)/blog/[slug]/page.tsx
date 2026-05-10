@@ -5,6 +5,7 @@ import { getAllPosts, getPost } from "@/lib/posts";
 import { formatDate } from "@/lib/format";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import { getSiteSettings } from "@/lib/site-settings";
+import { articleOgImage, articlePath, canonicalPath, siteName } from "@/lib/seo";
 import type { Metadata } from "next";
 
 type Params = { slug: string };
@@ -33,9 +34,40 @@ export async function generateStaticParams(): Promise<Params[]> {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const post = await getPost(decodeSlug(params.slug));
   if (!post) return { title: "Not found" };
+  const title = `${post.title} · PandaTalk8`;
+  const image = articleOgImage(post);
+  const path = articlePath(post.slug);
   return {
-    title: `${post.title} · PandaTalk8`,
+    title,
     description: post.excerpt,
+    alternates: {
+      canonical: path,
+    },
+    openGraph: {
+      type: "article",
+      siteName,
+      title,
+      description: post.excerpt,
+      url: canonicalPath(path),
+      publishedTime: post.date,
+      authors: ["Mr Panda"],
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@PandaTalk8",
+      creator: "@PandaTalk8",
+      title,
+      description: post.excerpt,
+      images: [image],
+    },
   };
 }
 
