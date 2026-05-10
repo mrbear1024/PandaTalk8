@@ -1,20 +1,30 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LuHouse, LuFileText, LuFolderKanban, LuUsers, LuGraduationCap, LuCircleUser, LuRss } from "react-icons/lu";
+import {
+  LuHouse,
+  LuFileText,
+  LuFolderKanban,
+  LuUsers,
+  LuGraduationCap,
+  LuCircleUser,
+  LuRss,
+  LuMenu,
+  LuX,
+} from "react-icons/lu";
 import type { IconType } from "react-icons";
 import ThemeToggle from "./ThemeToggle";
 
 const items: { key: string; label: string; icon: IconType; href: string }[] = [
-  { key: "home", label: "home", icon: LuHouse, href: "/" },
-  { key: "blog", label: "articles", icon: LuFileText, href: "/blog" },
-  { key: "projects", label: "projects", icon: LuFolderKanban, href: "/projects" },
-  { key: "community", label: "community", icon: LuUsers, href: "/community" },
-  { key: "courses", label: "courses", icon: LuGraduationCap, href: "/courses" },
-  { key: "about", label: "about", icon: LuCircleUser, href: "/about" },
+  { key: "home", label: "Home", icon: LuHouse, href: "/" },
+  { key: "blog", label: "Articles", icon: LuFileText, href: "/blog" },
+  { key: "projects", label: "Projects", icon: LuFolderKanban, href: "/projects" },
+  { key: "community", label: "Community", icon: LuUsers, href: "/community" },
+  { key: "courses", label: "Courses", icon: LuGraduationCap, href: "/courses" },
+  { key: "about", label: "About", icon: LuCircleUser, href: "/about" },
 ];
-
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -23,6 +33,12 @@ function isActive(pathname: string, href: string) {
 
 export default function Nav() {
   const pathname = usePathname() ?? "/";
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   return (
     <header className="site-header">
       <div className="inner">
@@ -33,10 +49,10 @@ export default function Nav() {
           </span>
           <span className="brand-name">
             <span className="zh">Mr Panda</span>
-            <span className="en">AI / Indie / Builder / Seller</span>
+            <span className="en">AI Builder · Indie Maker</span>
           </span>
         </Link>
-        <nav className="primary">
+        <nav className="primary nav-desktop" aria-label="Primary navigation">
           {items.map((it) => (
             <Link key={it.key} href={it.href} className={isActive(pathname, it.href) ? "active" : ""}>
               <it.icon className="nav-icon" aria-hidden />{it.label}
@@ -52,7 +68,47 @@ export default function Nav() {
           </a>
           <ThemeToggle />
         </nav>
+        <div className="mobile-actions">
+          <a
+            href="/blog/rss.xml"
+            className="nav-rss"
+            aria-label="RSS feed"
+            title="RSS feed"
+          >
+            <LuRss size={18} />
+          </a>
+          <ThemeToggle />
+          <button
+            type="button"
+            className="mobile-menu-toggle"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? <LuX aria-hidden /> : <LuMenu aria-hidden />}
+          </button>
+        </div>
       </div>
+      {open ? (
+        <nav id="mobile-nav" className="mobile-menu" aria-label="Mobile navigation">
+          {items.map((it) => (
+            <Link key={it.key} href={it.href} className={isActive(pathname, it.href) ? "active" : ""}>
+              <it.icon className="nav-icon" aria-hidden />
+              <span>{it.label}</span>
+            </Link>
+          ))}
+          <div className="mobile-menu-tools">
+            <a href="/blog/rss.xml" className="mobile-tool">
+              <LuRss aria-hidden />
+              <span>RSS</span>
+            </a>
+            <div className="mobile-tool theme-tool">
+              <ThemeToggle />
+            </div>
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }

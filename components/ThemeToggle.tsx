@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LuMoon, LuSun } from "react-icons/lu";
 
 type Theme = "light" | "dark";
 
@@ -20,8 +21,9 @@ export default function ThemeToggle() {
     localStorage.setItem("pt-theme", theme);
   }, [theme, mounted]);
 
-  // Render with consistent label until mounted (matches inline boot script default)
-  const label = !mounted ? "◐ dark" : theme === "light" ? "◐ dark" : "◑ light";
+  const isDark = mounted && theme === "dark";
+  const Icon = isDark ? LuSun : LuMoon;
+  const label = isDark ? "Light" : "Dark";
 
   return (
     <button
@@ -30,7 +32,8 @@ export default function ThemeToggle() {
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       aria-label="toggle theme"
     >
-      {label}
+      <Icon className="theme-toggle-icon" aria-hidden />
+      <span className="theme-toggle-text">{label}</span>
     </button>
   );
 }
