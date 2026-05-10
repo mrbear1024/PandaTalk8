@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 function siteOrigin(): string {
   const env = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
   if (env) return env.replace(/\/$/, "");
-  return "https://pandatalk.dev";
+  return "https://pandatalk8.com";
 }
 
 function escapeXml(s: string): string {
@@ -19,16 +19,8 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function blocksToText(post: Post): string {
-  if (typeof post.body === "string") return post.body;
-  if (!post.body) return "";
-  return post.body
-    .map((b) => {
-      if (b.type === "p") return `<p>${escapeXml(b.text)}</p>`;
-      const tag = b.type;
-      return `<${tag}>${escapeXml(b.text)}</${tag}>`;
-    })
-    .join("");
+function cdata(s: string): string {
+  return s.replace(/]]>/g, "]]]]><![CDATA[>");
 }
 
 function toRfc822(date: string): string {
@@ -46,15 +38,17 @@ export async function GET() {
   const items = posts
     .map((p) => {
       const url = `${origin}/blog/${encodeURIComponent(p.slug)}`;
-      const html = blocksToText(p);
+      const description = [
+        `<p>${escapeXml(p.excerpt)}</p>`,
+        `<p><a href="${url}">Read the full post</a></p>`,
+      ].join("");
       return [
         "<item>",
         `<title>${escapeXml(p.title)}</title>`,
         `<link>${url}</link>`,
         `<guid isPermaLink="true">${url}</guid>`,
         `<pubDate>${toRfc822(p.date)}</pubDate>`,
-        `<description>${escapeXml(p.excerpt)}</description>`,
-        `<content:encoded><![CDATA[${html}]]></content:encoded>`,
+        `<description><![CDATA[${cdata(description)}]]></description>`,
         `<category>${escapeXml(p.tag)}</category>`,
         "</item>",
       ].join("");
