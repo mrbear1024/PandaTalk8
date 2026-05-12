@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import ASCIIDivider from "@/components/ASCIIDivider";
 import { getAllPosts, getPost } from "@/lib/posts";
 import { formatDate } from "@/lib/format";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import { getSiteSettings } from "@/lib/site-settings";
 import { articleOgImage, articlePath, canonicalPath, siteName } from "@/lib/seo";
+import type { Post } from "@/lib/types";
 import type { Metadata } from "next";
 
 type Params = { slug: string };
@@ -72,8 +73,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 export default async function ArticlePage({ params }: { params: Params }) {
-  const post = await getPost(decodeSlug(params.slug));
+  const slug = decodeSlug(params.slug);
+  const post = await getPost(slug);
   if (!post) notFound();
+  if (post.body_format === "html_document") {
+    redirect(`/blog/${encodeURIComponent(slug)}/document`);
+  }
+
   const { site } = await getSiteSettings();
 
   return (
@@ -102,19 +108,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </div>
         </header>
         <div className="prose">
-          {typeof post.body === "string" ? (
-            <div dangerouslySetInnerHTML={{ __html: highlightCodeBlocks(post.body) }} />
-          ) : (
-            (post.body ?? []).map((b, i) => {
-              if (b.type === "h1") return <h1 key={i}>{b.text}</h1>;
-              if (b.type === "h2") return <h2 key={i}>{b.text}</h2>;
-              if (b.type === "h3") return <h3 key={i}>{b.text}</h3>;
-              if (b.type === "h4") return <h4 key={i}>{b.text}</h4>;
-              if (b.type === "h5") return <h5 key={i}>{b.text}</h5>;
-              if (b.type === "h6") return <h6 key={i}>{b.text}</h6>;
-              return <p key={i}>{b.text}</p>;
-            })
-          )}
+          <ArticleBody post={post} />
           <ASCIIDivider>━━━ fin ━━━</ASCIIDivider>
           <p className="mono muted" style={{ fontSize: "0.85rem", textAlign: "center" }}>
             If you read this far — thank you.
@@ -128,5 +122,25 @@ export default async function ArticlePage({ params }: { params: Params }) {
         </div>
       </article>
     </div>
+  );
+}
+
+function ArticleBody({ post }: { post: Post }) {
+  if (typeof post.body === "string") {
+    return <div dangerouslySetInnerHTML={{ __html: highlightCodeBlocks(post.body) }} />;
+  }
+
+  return (
+    <>
+      {(post.body ?? []).map((b, i) => {
+        if (b.type === "h1") return <h1 key={i}>{b.text}</h1>;
+        if (b.type === "h2") return <h2 key={i}>{b.text}</h2>;
+        if (b.type === "h3") return <h3 key={i}>{b.text}</h3>;
+        if (b.type === "h4") return <h4 key={i}>{b.text}</h4>;
+        if (b.type === "h5") return <h5 key={i}>{b.text}</h5>;
+        if (b.type === "h6") return <h6 key={i}>{b.text}</h6>;
+        return <p key={i}>{b.text}</p>;
+      })}
+    </>
   );
 }

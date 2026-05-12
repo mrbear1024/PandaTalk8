@@ -7,10 +7,12 @@
 //   list                       — list all posts
 //   get <slug>                 — print one post as JSON
 //   publish <file.md>          — create a post from a markdown file
+//   publish-html <file.html>   — create a post from a complete HTML document
 //   publish-batch <dir>        — publish every *.md in a directory
 //   edit <slug> <file.md>      — replace a post's body/title/etc.
+//   edit-html <slug> <file.html> — replace a post with a complete HTML document
 //   delete <slug>              — delete a post
-//   --dry                      — preview without writing (publish/publish-batch)
+//   --dry                      — preview without writing (publish/publish-html/publish-batch)
 //
 // All write paths go through the API. The CLI only does:
 //   1. Read .md files + parse frontmatter
@@ -168,6 +170,35 @@ function firstH1(body) {
   return m ? m[1].trim() : "";
 }
 
+function stripHtmlTags(value) {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function firstHtmlTitle(body) {
+  const title = body.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  if (title) return stripHtmlTags(title);
+  const h1 = body.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
+  return h1 ? stripHtmlTags(h1) : "";
+}
+
+function htmlMetaContent(body, name) {
+  const attr = String.raw`(?:name|property)=["']${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`;
+  const re = new RegExp(String.raw`<meta\b(?=[^>]*${attr})[^>]*\bcontent=["']([^"']*)["'][^>]*>`, "i");
+  const match = body.match(re);
+  return match ? stripHtmlTags(match[1]) : "";
+}
+
 // Walk a markdown body, find every local image reference (`![alt](path)` and
 // raw `<img src="path">`), upload each via /api/v1/upload, and rewrite the
 // body to the public URL. Returns { body, count }.
@@ -300,6 +331,49 @@ async function cmdPublish(file, opts = {}) {
   return post.slug;
 }
 
+async function cmdPublishHtml(file, opts = {}) {
+  if (!file) throw new Error("usage: blog publish-html <file.html>");
+  const text = await fs.readFile(file, "utf8");
+  const { meta, body } = parseFrontmatter(text);
+
+  const title = (
+    meta.title ||
+    firstHtmlTitle(body) ||
+    path.basename(file, path.extname(file))
+  ).trim();
+  if (!title) throw new Error(`${file}: title is empty`);
+  if (!body.trim()) throw new Error(`${file}: body is empty`);
+
+  const payload = {
+    title,
+    body_html: body,
+    body_format: "html_document",
+    slug: meta.slug || undefined,
+    tag: opts.tag || meta.tag || undefined,
+    cover: meta.cover || undefined,
+    date: meta.date || undefined,
+    lang: meta.lang || undefined,
+    excerpt:
+      meta.excerpt ||
+      meta.description ||
+      htmlMetaContent(body, "description") ||
+      htmlMetaContent(body, "og:description") ||
+      undefined,
+    read_time: meta.read_time || undefined,
+  };
+
+  if (opts.dry) {
+    console.log(`[dry-run] ${file} →`);
+    const preview = { ...payload, body_html: `${body.slice(0, 200)}…` };
+    console.log(JSON.stringify(preview, null, 2));
+    return null;
+  }
+
+  const { post } = await apiJson("POST", "/api/v1/posts", payload);
+  console.log(`✓ published HTML document /${post.slug}  ·  ${post.title}`);
+  return post.slug;
+}
+
 async function cmdPublishBatch(dir, opts = {}) {
   if (!dir) throw new Error("usage: blog publish-batch <dir>");
   const stat = await fs.stat(dir).catch(() => null);
@@ -367,6 +441,34 @@ async function cmdEdit(slug, file) {
   console.log(`✓ updated /${post.slug}`);
 }
 
+async function cmdEditHtml(slug, file) {
+  if (!slug || !file) throw new Error("usage: blog edit-html <slug> <file.html>");
+  const text = await fs.readFile(file, "utf8");
+  const { meta, body } = parseFrontmatter(text);
+  if (!body.trim()) throw new Error(`${file}: body is empty`);
+
+  const patch = {
+    body_html: body,
+    body_format: "html_document",
+  };
+  if (meta.title) patch.title = meta.title;
+  if (meta.tag) patch.tag = meta.tag;
+  if (meta.lang) patch.lang = meta.lang;
+  if (meta.date) patch.date = meta.date;
+  if (meta.excerpt || meta.description) patch.excerpt = meta.excerpt || meta.description;
+  if (meta.read_time) patch.read_time = meta.read_time;
+  if (Object.prototype.hasOwnProperty.call(meta, "cover")) {
+    patch.cover = (meta.cover || "").trim() || null;
+  }
+
+  const { post } = await apiJson(
+    "PATCH",
+    `/api/v1/posts/${encodeURIComponent(slug)}`,
+    patch
+  );
+  console.log(`✓ updated HTML document /${post.slug}`);
+}
+
 async function cmdDelete(slug) {
   if (!slug) throw new Error("usage: blog delete <slug>");
   await apiJson("DELETE", `/api/v1/posts/${encodeURIComponent(slug)}`);
@@ -386,8 +488,10 @@ commands:
   list                          list all posts
   get <slug>                    print full post JSON
   publish <file.md>             create a post from a markdown file
+  publish-html <file.html>      create a post from a complete HTML document
   publish-batch <dir>           publish every *.md in a directory
   edit <slug> <file.md>         replace post body/title/etc.
+  edit-html <slug> <file.html>  replace post with a complete HTML document
   delete <slug>                 delete post by slug
   --dry                         (with publish/publish-batch) preview only
   --tag <value>                 (with publish/publish-batch) override every
@@ -437,8 +541,10 @@ const COMMANDS = {
   list: () => cmdList(),
   get: () => cmdGet(positional[0]),
   publish: () => cmdPublish(positional[0], opts),
+  "publish-html": () => cmdPublishHtml(positional[0], opts),
   "publish-batch": () => cmdPublishBatch(positional[0], opts),
   edit: () => cmdEdit(positional[0], positional[1]),
+  "edit-html": () => cmdEditHtml(positional[0], positional[1]),
   delete: () => cmdDelete(positional[0]),
 };
 

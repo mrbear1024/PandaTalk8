@@ -1,11 +1,13 @@
 import { getSupabase, getSupabaseNoStore, getSupabaseTagged, isSupabaseConfigured } from "./supabase";
+import { getHtmlDocumentDemoPost } from "./html-document-demo";
 import { SEED_POSTS } from "./seed";
 import type { Post } from "./types";
 
 const POST_LIST_COLUMNS = "slug,date,read_time,lang,tag,title,excerpt,cover,featured,created_at";
 
 export async function getAllPosts(): Promise<Post[]> {
-  if (!isSupabaseConfigured) return SEED_POSTS;
+  const demo = await getHtmlDocumentDemoPost("blog-architecture-demo");
+  if (!isSupabaseConfigured) return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
   const sb = getSupabase()!;
   // Order by date first (the editorial date the author chose), then by
   // created_at as a tiebreaker so multiple posts published on the same day
@@ -29,13 +31,14 @@ export async function getAllPosts(): Promise<Post[]> {
   }
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);
-    return SEED_POSTS;
+    return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
   }
-  return (data ?? []) as Post[];
+  return demo ? [demo, ...((data ?? []) as Post[])] : ((data ?? []) as Post[]);
 }
 
 export async function getAllPostsWithBody(): Promise<Post[]> {
-  if (!isSupabaseConfigured) return SEED_POSTS;
+  const demo = await getHtmlDocumentDemoPost("blog-architecture-demo");
+  if (!isSupabaseConfigured) return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
   const sb = getSupabaseNoStore()!;
   const { data, error } = await sb
     .from("posts")
@@ -53,12 +56,15 @@ export async function getAllPostsWithBody(): Promise<Post[]> {
   }
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);
-    return SEED_POSTS;
+    return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
   }
-  return (data ?? []) as Post[];
+  return demo ? [demo, ...((data ?? []) as Post[])] : ((data ?? []) as Post[]);
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
+  const demo = await getHtmlDocumentDemoPost(slug);
+  if (demo) return demo;
+
   if (!isSupabaseConfigured) {
     return SEED_POSTS.find((p) => p.slug === slug) ?? null;
   }

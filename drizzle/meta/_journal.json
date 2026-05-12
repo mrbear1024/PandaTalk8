@@ -15,6 +15,13 @@
       "when": 1778378400000,
       "tag": "0001_backfill_community_covers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778499600000,
+      "tag": "0002_add_post_body_format",
+      "breakpoints": true
     }
   ]
 }

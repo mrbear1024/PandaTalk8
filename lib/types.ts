@@ -7,6 +7,8 @@ export type PostBodyBlock =
   | { type: "h5"; text: string }
   | { type: "h6"; text: string };
 
+export type PostBodyFormat = "html" | "md" | "blocks" | "html_document";
+
 // `body` is a jsonb column. New posts store the rendered HTML as a JSON
 // string (e.g. "<p>...</p>"). Legacy posts store an array of typed blocks.
 // The reader and edit form both branch on the runtime type.
@@ -19,6 +21,7 @@ export type Post = {
   title: string;
   excerpt: string;
   body?: PostBodyBlock[] | string | null;
+  body_format?: PostBodyFormat | null;
   cover?: string | null;
   featured?: boolean | null;
 };

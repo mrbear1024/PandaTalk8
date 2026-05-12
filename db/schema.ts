@@ -10,6 +10,7 @@ export const posts = pgTable("posts", {
   title: text("title").notNull(),
   excerpt: text("excerpt").notNull(),
   body: jsonb("body").notNull().default(sql`'""'::jsonb`),
+  bodyFormat: text("body_format").notNull().default("html"),
   cover: text("cover"),
   featured: boolean("featured").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

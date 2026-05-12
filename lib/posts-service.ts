@@ -10,6 +10,7 @@ import {
   todayISO,
 } from "./post-derive";
 import type { Post } from "./types";
+import type { PostBodyFormat } from "./types";
 
 // Single source of truth for post writes. Both /api/v1/posts and the admin
 // UI's server actions should funnel through here so the rendering pipeline,
@@ -26,6 +27,7 @@ export type CreatePostInput = {
   // Provide exactly one of body_md / body_html.
   body_md?: string;
   body_html?: string;
+  body_format?: PostBodyFormat;
   // All of the below are optional — server fills in sensible defaults.
   slug?: string;
   tag?: string;
@@ -74,6 +76,11 @@ function plainTextFromHtml(html: string): string {
     .trim();
 }
 
+function normalizeBodyFormat(value: string | null | undefined): PostBodyFormat {
+  if (value === "md" || value === "blocks" || value === "html_document") return value;
+  return "html";
+}
+
 function detectLang(text: string): string {
   return /[一-鿿]/.test(text) ? "ZH" : "EN";
 }
@@ -104,6 +111,7 @@ function bustCaches(slug: string) {
   revalidatePath("/");
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
+  revalidatePath(`/blog/${slug}/document`);
   revalidateTag(`post:${slug}`);
 }
 
@@ -120,7 +128,15 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     throw new PostsServiceError("provide exactly one of body_md / body_html", 400);
   }
 
-  const html = md ? renderMarkdown(md) : givenHtml!;
+  const bodyFormat = normalizeBodyFormat(input.body_format);
+  if (bodyFormat === "md" && !md) {
+    throw new PostsServiceError("body_format=md requires body_md", 400);
+  }
+  if (bodyFormat === "html_document" && !givenHtml) {
+    throw new PostsServiceError("body_format=html_document requires body_html", 400);
+  }
+
+  const storedBody = bodyFormat === "md" ? md! : md ? renderMarkdown(md) : givenHtml!;
   const plain = md ? plainTextFromMarkdown(md) : plainTextFromHtml(givenHtml!);
 
   let slug = (input.slug ?? "").trim();
@@ -142,7 +158,8 @@ export async function createPost(input: CreatePostInput): Promise<Post> {
     tag,
     title,
     excerpt: input.excerpt?.trim() || deriveExcerptFromText(plain),
-    body: html,
+    body: storedBody,
+    body_format: bodyFormat,
     cover: input.cover ? input.cover.trim() : null,
   };
 
@@ -177,8 +194,19 @@ export async function updatePost(slug: string, patch: UpdatePostInput): Promise<
     if (!md && !givenHtml) {
       throw new PostsServiceError("body_md or body_html cannot be empty", 400);
     }
-    fields.body = md ? renderMarkdown(md) : givenHtml!;
+    const bodyFormat = normalizeBodyFormat(patch.body_format ?? String(existing.body_format ?? "html"));
+    if (bodyFormat === "md" && !md) {
+      throw new PostsServiceError("body_format=md requires body_md", 400);
+    }
+    if (bodyFormat === "html_document" && !givenHtml) {
+      throw new PostsServiceError("body_format=html_document requires body_html", 400);
+    }
+    fields.body = bodyFormat === "md" ? md! : md ? renderMarkdown(md) : givenHtml!;
+    fields.body_format = bodyFormat;
     plainForDerive = md ? plainTextFromMarkdown(md) : plainTextFromHtml(givenHtml!);
+  }
+  if (patch.body_format != null && fields.body_format == null) {
+    fields.body_format = normalizeBodyFormat(patch.body_format);
   }
   if (patch.title != null) fields.title = patch.title.trim();
   if (patch.tag != null && patch.tag.trim().length > 0) fields.tag = patch.tag.trim();

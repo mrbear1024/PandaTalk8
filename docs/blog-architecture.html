@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PandaTalk8 博客文章发布技术方案</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --text-muted: #888;
+    --accent: #f0c040;
+    --accent-dim: #b8942e;
+    --green: #4ec970;
+    --blue: #5b9bf5;
+    --red: #e06060;
+    --purple: #b388ff;
+    --orange: #ffab40;
+    --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; min-width: 0; }
+
+  html {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    padding: 3rem 1.5rem;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  header.hero {
+    text-align: center;
+    padding: 2rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+
+  header.hero .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  header.hero h1 {
+    display: block;
+    max-width: 100%;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    white-space: normal;
+  }
+
+  header.hero .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 3rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    margin-right: 0.5rem;
+    font-weight: 400;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 2rem 0 0.75rem;
+  }
+
+  p { margin-bottom: 1rem; }
+  p, li, td, .note, .card, .tldr {
+    overflow-wrap: anywhere;
+  }
+
+  .tldr {
+    background: var(--surface);
+    border: 1px solid var(--accent-dim);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tldr strong {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin: 1rem 0 1.5rem;
+    color: var(--text-muted);
+    max-width: 100%;
+  }
+
+  pre .hl { color: var(--accent); }
+  pre .gr { color: var(--green); }
+  pre .bl { color: var(--blue); }
+  pre .rd { color: var(--red); }
+  pre .wh { color: #fff; }
+  pre .pp { color: var(--purple); }
+  pre .or { color: var(--orange); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--accent);
+    overflow-wrap: anywhere;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.92rem;
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.6rem 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .card-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card-row-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .card.active { border-color: var(--green); }
+  .card.legacy { border-color: var(--text-muted); opacity: 0.7; }
+  .card.new { border-color: var(--blue); border-style: dashed; }
+  .card.isolated { border-color: var(--orange); }
+
+  .card .label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .card .label .badge {
+    display: inline-block;
+    padding: 0.1em 0.5em;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .badge-current { background: #1a2e1a; color: var(--green); border: 1px solid #2a4a2a; }
+  .badge-legacy { background: #1c1c1c; color: var(--text-muted); border: 1px solid #333; }
+  .badge-new { background: #1a2040; color: var(--blue); border: 1px solid #2a3a5a; }
+
+  .card p { font-size: 0.92rem; margin-bottom: 0; color: var(--text-muted); }
+
+  .layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.5rem 0;
+  }
+
+  .layer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+  }
+
+  .layer:first-child { border-radius: 8px 8px 0 0; }
+  .layer:last-child { border-radius: 0 0 8px 8px; }
+  .layer + .layer { border-top: none; }
+
+  .layer .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+
+  .layer .tag.write { background: #1a2e1a; color: var(--green); border: 1px solid #2a4a2a; }
+  .layer .tag.store { background: #2e2a1a; color: var(--accent); border: 1px solid #4a3a2a; }
+  .layer .tag.read { background: #1a2040; color: var(--blue); border: 1px solid #2a3a5a; }
+
+  .layer h4 {
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+
+  .layer p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0; }
+
+  .arrow-down {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin: -1px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-list {
+    list-style: none;
+    counter-reset: steps;
+    margin: 1rem 0 1.5rem;
+    padding: 0;
+  }
+
+  .step-list li {
+    counter-increment: steps;
+    padding: 0.6rem 0 0.6rem 2.5rem;
+    position: relative;
+    border-left: 2px solid var(--border);
+    margin-left: 0.8rem;
+  }
+
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: -0.75rem;
+    top: 0.55rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: var(--surface-2);
+    border: 2px solid var(--accent-dim);
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .step-list li:last-child { border-left-color: transparent; }
+  .step-list li strong { color: #fff; }
+
+  .note {
+    background: var(--surface);
+    border-left: 3px solid var(--blue);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0 1.5rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.92rem;
+  }
+
+  .note.warn { border-left-color: var(--orange); }
+  .note.ok { border-left-color: var(--green); }
+
+  .note strong { color: #fff; }
+
+  .format-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    vertical-align: middle;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .fmt-html { background: #1a2e1a; color: var(--green); border: 1px solid #2a4a2a; }
+  .fmt-md { background: #2a1a40; color: var(--purple); border: 1px solid #3a2a5a; }
+  .fmt-block { background: #1c1c1c; color: var(--text-muted); border: 1px solid #333; }
+  .fmt-doc { background: #40260f; color: var(--orange); border: 1px solid #5a3a1a; }
+
+  .split-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    margin: 1.5rem 0;
+    align-items: stretch;
+  }
+
+  .split-flow .branch {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .split-flow .branch h4 { font-size: 0.95rem; color: #fff; margin-bottom: 0.5rem; }
+  .split-flow .branch p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0; }
+
+  .split-flow .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  @media (max-width: 640px) {
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body { padding: 1.5rem 1rem; }
+    .container { width: 100%; max-width: 100%; overflow-x: hidden; }
+    header.hero { padding: 1.25rem 0 2rem; margin-bottom: 2rem; }
+    header.hero h1 {
+      display: block;
+      max-width: 100%;
+      font-size: 1.18rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+    header.hero .subtitle { font-size: 0.95rem; }
+    h2 { font-size: 1.15rem; overflow-wrap: anywhere; word-break: break-all; }
+    p, li, td, .note, .card, .tldr { overflow-wrap: anywhere; word-break: break-word; }
+    code, .format-badge { white-space: normal; overflow-wrap: anywhere; word-break: break-all; }
+    .tldr { padding: 1rem; font-size: 0.95rem; }
+    .card-row, .card-row-3 { grid-template-columns: 1fr; }
+    .card-row-4 { grid-template-columns: 1fr; }
+    .split-flow { grid-template-columns: 1fr; gap: 0.5rem; }
+    .split-flow .divider { padding: 0.5rem 0; }
+    pre {
+      max-width: 100%;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      font-size: 0.68rem;
+      padding: 0.85rem;
+    }
+    pre code { white-space: pre-wrap; word-break: break-word; }
+    table { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <div class="eyebrow">Technical Architecture</div>
+  <h1>PandaTalk8 博客文章发布技术方案</h1>
+  <p class="subtitle">支持 HTML 预渲染和 Markdown 动态渲染的双格式架构，从写入到展示的完整数据流</p>
+</header>
+
+<div class="tldr">
+  <strong>TL;DR</strong>
+  数据库 <code>body</code> 列同时兼容四种格式：<span class="format-badge fmt-html">HTML string</span> 预渲染正文片段、<span class="format-badge fmt-md">Markdown string</span> 原始内容、<span class="format-badge fmt-block">Block[]</span> 结构化块，以及 <span class="format-badge fmt-doc">HTML document</span> 完整 HTML 文档。页面渲染层根据 <code>body_format</code> 自动分支——正文片段进入站点文章模板，完整 HTML 文档从文章 URL 直接跳转到原始 HTML document route，像本地打开 HTML 文件一样展示。
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">01</span>数据库存储：body 列的四种格式</h2>
+
+<p>
+Supabase <code>posts</code> 表的 <code>body</code> 列类型为 <code>jsonb</code>，实际存储的是一个 JSON 值。由于历史演进和功能需求，这个值有四种合法形态：
+</p>
+
+<div class="card-row-4">
+  <div class="card active">
+    <div class="label">HTML String <span class="badge badge-current">当前主力</span></div>
+    <p>正文 HTML 片段，例如 <code>&lt;p&gt;...&lt;/p&gt;</code>。后台富文本和 Markdown 预渲染默认走这个格式。读取时进入站点文章模板，仅做代码高亮。</p>
+  </div>
+  <div class="card new">
+    <div class="label">Markdown String <span class="badge badge-new">新增支持</span></div>
+    <p>直接存原始 Markdown 内容。读取时在服务端动态调用 Markdown 渲染器转为 HTML，再做代码高亮后输出。</p>
+  </div>
+  <div class="card isolated">
+    <div class="label">HTML Document <span class="badge badge-new">新增支持</span></div>
+    <p>完整 HTML 文档，例如包含 <code>&lt;html&gt;</code>、<code>&lt;head&gt;</code>、<code>&lt;style&gt;</code>、<code>&lt;body&gt;</code> 的独立页面。读取时不进入 <code>.prose</code>，而是通过 document 路由直接返回原始 HTML。</p>
+  </div>
+  <div class="card legacy">
+    <div class="label">Block Array <span class="badge badge-legacy">历史遗留</span></div>
+    <p>早期格式，body 是 <code>[{type:"h1",text:"..."}, {type:"p",text:"..."}]</code> 结构化数组。页面逐块映射为 React 元素。</p>
+  </div>
+</div>
+
+<h3>格式检测逻辑</h3>
+
+<pre><code><span class="wh">function detectBodyFormat(body, body_format): "html" | "markdown" | "html_document" | "blocks"</span>
+
+  <span class="bl">if</span> body_format is set
+    <span class="bl">return</span> body_format       <span class="hl">// 推荐：显式标记，零猜测</span>
+
+  <span class="bl">if</span> Array.isArray(body)
+    <span class="bl">return</span> <span class="pp">"blocks"</span>          <span class="hl">// 历史遗留的结构化块</span>
+
+  <span class="bl">if</span> <span class="bl">typeof</span> body === <span class="gr">"string"</span>
+    <span class="bl">if</span> body contains <span class="gr">"&lt;!doctype"</span> or <span class="gr">"&lt;html"</span> or <span class="gr">"&lt;head"</span>
+      <span class="bl">return</span> <span class="or">"html_document"</span> <span class="hl">// 完整 HTML 文档</span>
+    <span class="bl">if</span> body contains <span class="gr">"&lt;p&gt;"</span> or <span class="gr">"&lt;h1&gt;"</span> or <span class="gr">"&lt;div&gt;"</span> ...
+      <span class="bl">return</span> <span class="gr">"html"</span>          <span class="hl">// 已渲染的 HTML</span>
+    <span class="bl">else</span>
+      <span class="bl">return</span> <span class="pp">"markdown"</span>      <span class="hl">// 原始 Markdown</span></code></pre>
+
+<div class="note">
+  <strong>推荐：显式标记。</strong>在 posts 表新增 <code>body_format</code> 列（枚举：<code>'html' | 'md' | 'blocks' | 'html_document'</code>），写入时明确标记，读取时零猜测。比内容嗅探更可靠，尤其对于不含任何 HTML 标签的纯文本段落，以及包含完整 <code>&lt;html&gt;</code> 结构的文档页面。
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">02</span>写入流程：两条入库路径</h2>
+
+<pre><code><span class="wh">用户写 .md 文件</span>
+      │
+      ▼
+<span class="bl">CLI (blog.mjs)</span> ── POST /api/v1/posts ──▶ <span class="gr">Next.js API Route</span>
+                   Bearer token 鉴权          │
+                                              ▼
+                                    <span class="hl">posts-service.ts</span>
+                                       │
+           ┌───────────────────────────┼───────────────────────┐
+           ▼                           ▼                       ▼
+  <span class="gr">路径 A: body_md</span>           <span class="pp">路径 B: body_md</span>          <span class="bl">DeepSeek AI</span>
+  <span class="gr">预渲染模式</span>                <span class="pp">原始存储模式</span>             生成 slug + tag
+           │                           │                       │
+   <span class="gr">marked.parse(md)</span>              <span class="pp">原样保存</span>                  │
+   <span class="gr">Markdown → HTML</span>         <span class="pp">body_format = 'md'</span>             │
+           │                           │                       │
+           └───────────┬───────────────┘───────────────────────┘
+                       ▼
+                <span class="hl">Supabase INSERT</span>
+                       │
+                       ▼
+                <span class="rd">revalidatePath("/")</span>
+                <span class="rd">revalidatePath("/blog")</span>
+                <span class="rd">revalidatePath("/blog/&lt;slug&gt;")</span></code></pre>
+
+<div class="split-flow">
+  <div class="branch" style="border-color: var(--green);">
+    <h4><span class="format-badge fmt-html">A</span> 预渲染入库（当前）</h4>
+    <p>
+      CLI 提交 <code>body_md</code> → 服务端 <code>marked.parse()</code> 转为 HTML → 存入 <code>body</code> 列。<br>
+      优点：读取时零额外计算。<br>
+      缺点：原始 Markdown 丢失，无法再次编辑源码。
+    </p>
+  </div>
+  <div class="divider">or</div>
+  <div class="branch" style="border-color: var(--purple); border-style: dashed;">
+    <h4><span class="format-badge fmt-md">B</span> Markdown 原样入库（新增）</h4>
+    <p>
+      CLI 提交 <code>body_md</code> + <code>body_format: "md"</code> → 服务端直接保存原始 Markdown 到 <code>body</code> 列。<br>
+      优点：保留源码，支持再次编辑、格式切换。<br>
+      代价：每次读取需动态渲染。
+    </p>
+  </div>
+</div>
+
+<div class="note warn">
+  <strong>HTML fragment 与完整 HTML document 必须区分。</strong>
+  当前后台富文本和 Markdown 预渲染产物只是正文片段，适合放进站点的 <code>.prose</code> 容器。像 <code>docs/blog-architecture.html</code> 这种完整 HTML 文档包含自己的 <code>&lt;head&gt;</code>、<code>&lt;style&gt;</code>、<code>&lt;body&gt;</code>，不能直接塞进文章正文容器，否则会产生非法 DOM、样式互相污染和安全边界不清晰的问题。
+</div>
+
+<div class="split-flow">
+  <div class="branch" style="border-color: var(--orange);">
+    <h4><span class="format-badge fmt-doc">C</span> 完整 HTML 文档入库（新增）</h4>
+    <p>
+      CLI/API 提交 <code>body_html</code> + <code>body_format: "html_document"</code> → 服务端原样保存完整 HTML 到 <code>body</code> 列。<br>
+      读取时 <code>/blog/&lt;slug&gt;</code> 直接跳转到 <code>/blog/&lt;slug&gt;/document</code>，由该路由返回完整 HTML 文档。
+    </p>
+  </div>
+  <div class="divider">safe boundary</div>
+  <div class="branch">
+    <h4>安全与兼容边界</h4>
+    <p>
+      站内文章模板不注入完整 HTML 文档；document 路由直接返回 <code>text/html</code>。这样 HTML 文档可以保留自己的样式和布局，同时不会影响导航栏、页脚、文章列表、RSS 和现有富文本文章。
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">03</span>读取流程：格式感知的渲染管线</h2>
+
+<p>
+访客请求 <code>/blog/some-slug</code> 时，服务端从 Supabase 取出 <code>post.body</code>，根据格式走不同的渲染分支：
+</p>
+
+<pre><code><span class="wh">浏览器请求 /blog/some-slug</span>
+           │
+           ▼
+   <span class="bl">Next.js SSR (Server Component)</span>
+           │
+   <span class="bl">getPost(slug)</span> → Supabase query
+           │
+           ▼
+   <span class="hl">detectBodyFormat(post.body)</span>
+           │
+    ┌──────┼──────────────────┬─────────────────────┐
+    ▼      ▼                  ▼                     ▼
+  <span class="pp">"blocks"</span>  <span class="gr">"html"</span>              <span class="pp">"markdown"</span>        <span class="or">"html_document"</span>
+    │      │                  │
+    │      │          <span class="pp">marked.parse(body)</span>
+    │      │          <span class="pp">Markdown → HTML (动态)</span>
+    │      │                  │
+    │      └────────┬─────────┘
+    │               ▼
+    │     <span class="hl">highlightCodeBlocks(html)</span>
+    │     <span class="hl">代码块语法高亮 (lowlight)</span>
+    │               │
+    │               ▼
+    │     <span class="gr">dangerouslySetInnerHTML</span>
+    │     <span class="gr">HTML 字符串注入 DOM</span>
+    │
+    ▼
+  <span class="pp">post.body.map(block =></span>
+  <span class="pp">  &lt;H1&gt; / &lt;H2&gt; / &lt;P&gt; …)</span>
+  <span class="pp">逐块映射 React 元素</span>
+    │
+    │                               <span class="or">redirect("/blog/&lt;slug&gt;/document")</span>
+    │                               <span class="or">直接输出完整 HTML 文档</span>
+    │
+    └──────────────┬──────────┘
+                   ▼
+           <span class="wh">完整 HTML 页面返回浏览器</span></code></pre>
+
+<h3>渲染分支详解</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>格式</th>
+      <th>检测条件</th>
+      <th>渲染步骤</th>
+      <th>开销</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="format-badge fmt-html">HTML</span></td>
+      <td><code>typeof body === "string"</code> 且含 HTML 标签</td>
+      <td>highlightCodeBlocks → dangerouslySetInnerHTML</td>
+      <td>低：仅正则替换代码块</td>
+    </tr>
+    <tr>
+      <td><span class="format-badge fmt-md">Markdown</span></td>
+      <td><code>typeof body === "string"</code> 且不含 HTML 标签（或 <code>body_format === "md"</code>）</td>
+      <td>marked.parse → highlightCodeBlocks → dangerouslySetInnerHTML</td>
+      <td>中：Markdown 解析 + 代码高亮</td>
+    </tr>
+    <tr>
+      <td><span class="format-badge fmt-doc">HTML Document</span></td>
+      <td><code>body_format === "html_document"</code></td>
+      <td><code>/blog/[slug]</code> redirect → <code>/blog/[slug]/document</code> 原样返回完整 HTML</td>
+      <td>低：主页面无解析；document route 直接输出</td>
+    </tr>
+    <tr>
+      <td><span class="format-badge fmt-block">Blocks</span></td>
+      <td><code>Array.isArray(body)</code></td>
+      <td>逐块 <code>.map()</code> 映射为 React 元素</td>
+      <td>低：无解析，直接映射</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note ok">
+  <strong>Markdown 动态渲染的性能影响。</strong>
+  <code>marked.parse()</code> 对一篇 3000 字的文章耗时约 1-3ms（Node.js 服务端），加上代码高亮约 5-10ms。对比完整 SSR 的 200-500ms 总耗时，额外开销可忽略。且这个计算发生在服务端 Server Component 内，不增加客户端 JS bundle。
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">04</span>三层架构（含双格式）</h2>
+
+<div class="layers">
+  <div class="layer">
+    <div class="tag write">Write Path</div>
+    <h4>写入层</h4>
+    <p>
+      <code>.md</code> 文件 → CLI → API →
+      <strong style="color:var(--green)">预渲染路径</strong>: <code>marked.parse()</code> 转 HTML 存入 /
+      <strong style="color:var(--purple)">原始路径</strong>: 保留 Markdown 原文存入
+      → AI 生成 slug/tag → R2 上传图片 → <code>revalidatePath</code> 清缓存
+    </p>
+  </div>
+  <div class="arrow-down">▼</div>
+  <div class="layer">
+    <div class="tag store">Storage</div>
+    <h4>存储层</h4>
+    <p>
+      Supabase <code>posts</code> 表 — <code>body</code> (jsonb): HTML string / Markdown string / Block[]<br>
+      可选: <code>body_format</code> 列显式标记格式<br>
+      Cloudflare R2: 图片 CDN
+    </p>
+  </div>
+  <div class="arrow-down">▼</div>
+  <div class="layer">
+    <div class="tag read">Read Path</div>
+    <h4>读取层（格式感知渲染）</h4>
+    <p>
+      浏览器 → Vercel → Next.js SSR → <code>getPost(slug)</code> 查 Supabase → <code>detectBodyFormat()</code> 格式分支 →
+      HTML 直出 / Markdown 动态 <code>marked.parse()</code> / Blocks 逐块映射 →
+      <code>highlightCodeBlocks()</code> 语法高亮 → React Server Component 渲染 → 返回浏览器
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">05</span>核心文件与职责</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>文件</th>
+      <th>职责</th>
+      <th>格式相关</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>scripts/blog.mjs</code></td>
+      <td>CLI 入口，读取 .md 文件，调用 HTTP API</td>
+      <td>可传 <code>body_format</code> 参数控制入库方式</td>
+    </tr>
+    <tr>
+      <td><code>app/api/v1/posts/route.ts</code></td>
+      <td>API 路由，接收 POST/GET，鉴权</td>
+      <td>透传 <code>body_format</code> 到 service 层</td>
+    </tr>
+    <tr>
+      <td><code>lib/posts-service.ts</code></td>
+      <td>核心业务：渲染、AI 元数据、写入、缓存清除</td>
+      <td>根据 <code>body_format</code> 决定是否预渲染</td>
+    </tr>
+    <tr>
+      <td><code>lib/posts.ts</code></td>
+      <td>前台查询：getAllPosts / getPost</td>
+      <td>body 字段原样返回，格式判断交给页面</td>
+    </tr>
+    <tr>
+      <td><code>lib/highlight.ts</code></td>
+      <td>代码块语法高亮 (lowlight)</td>
+      <td>仅处理 HTML 字符串中的 &lt;pre&gt;&lt;code&gt;</td>
+    </tr>
+    <tr>
+      <td><code>lib/types.ts</code></td>
+      <td>类型定义</td>
+      <td><code>body?: PostBodyBlock[] | string | null</code>，新增 <code>body_format?: "html" | "md" | "blocks" | "html_document"</code></td>
+    </tr>
+    <tr>
+      <td><code>app/(site)/blog/[slug]/page.tsx</code></td>
+      <td>文章详情页，SSR 渲染</td>
+      <td>四分支渲染：HTML / Markdown / HTML Document / Blocks</td>
+    </tr>
+    <tr>
+      <td><code>app/(site)/blog/[slug]/document/route.ts</code></td>
+      <td>完整 HTML 文档输出路由</td>
+      <td>仅处理 <code>body_format = "html_document"</code>，返回 <code>text/html</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">06</span>page.tsx 渲染伪代码</h2>
+
+<pre><code><span class="bl">// app/(site)/blog/[slug]/page.tsx — 渲染逻辑</span>
+
+<span class="bl">import</span> { marked } <span class="bl">from</span> <span class="gr">"marked"</span>;
+<span class="bl">import</span> { highlightCodeBlocks } <span class="bl">from</span> <span class="gr">"@/lib/highlight"</span>;
+
+<span class="wh">function renderBody(post) {</span>
+
+  <span class="hl">// 分支 0: 完整 HTML 文档（新增）</span>
+  <span class="bl">if</span> (post.body_format === <span class="or">"html_document"</span>) {
+    <span class="bl">redirect</span>(<span class="gr">`/blog/${post.slug}/document`</span>);
+  }
+
+  <span class="hl">// 分支 1: Block 数组（历史遗留）</span>
+  <span class="bl">if</span> (Array.isArray(post.body)) {
+    <span class="bl">return</span> post.body.map(block =>
+      block.type === <span class="gr">"h1"</span> ? <span class="pp">&lt;h1&gt;</span>{block.text}<span class="pp">&lt;/h1&gt;</span>
+      block.type === <span class="gr">"p"</span>  ? <span class="pp">&lt;p&gt;</span>{block.text}<span class="pp">&lt;/p&gt;</span>
+      ...
+    );
+  }
+
+  <span class="hl">// 分支 2: 字符串内容（HTML fragment 或 Markdown）</span>
+  <span class="bl">if</span> (<span class="bl">typeof</span> post.body === <span class="gr">"string"</span>) {
+
+    <span class="bl">let</span> html = post.body;
+
+    <span class="hl">// 2a: 如果是 Markdown，先动态渲染为 HTML</span>
+    <span class="bl">if</span> (post.body_format === <span class="gr">"md"</span> || !looksLikeHtml(post.body)) {
+      html = <span class="pp">marked.parse</span>(post.body);
+    }
+
+    <span class="hl">// 2b: 代码高亮（对 HTML 和 Markdown→HTML 都生效）</span>
+    html = <span class="gr">highlightCodeBlocks</span>(html);
+
+    <span class="bl">return</span> <span class="pp">&lt;div dangerouslySetInnerHTML=</span>{{ __html: html }} <span class="pp">/&gt;</span>;
+  }
+
+  <span class="bl">return null</span>;
+<span class="wh">}</span></code></pre>
+
+<h3>完整 HTML 文档输出路由伪代码</h3>
+
+<pre><code><span class="bl">// app/(site)/blog/[slug]/document/route.ts — 独立文档输出</span>
+
+<span class="bl">export async function</span> GET(request, { params }) {
+  <span class="bl">const</span> post = await <span class="pp">getPost</span>(decodeSlug(params.slug));
+
+  <span class="bl">if</span> (!post || post.body_format !== <span class="or">"html_document"</span>) {
+    <span class="bl">return</span> <span class="pp">new Response</span>(<span class="gr">"Not found"</span>, { status: 404 });
+  }
+
+  <span class="bl">if</span> (typeof post.body !== <span class="gr">"string"</span>) {
+    <span class="bl">return</span> <span class="pp">new Response</span>(<span class="gr">"Invalid document"</span>, { status: 500 });
+  }
+
+  <span class="bl">return</span> <span class="pp">new Response</span>(post.body, {
+    headers: {
+      <span class="gr">"content-type"</span>: <span class="gr">"text/html; charset=utf-8"</span>,
+      <span class="gr">"x-robots-tag"</span>: <span class="gr">"noindex"</span>
+    }
+  });
+}</code></pre>
+
+<div class="note">
+  <strong>为什么 document 路由建议 noindex？</strong>
+  SEO、OG、RSS、站内导航仍可指向 <code>/blog/[slug]</code>，它会跳转到原始 HTML 输出。若希望裸文档页面避免重复收录，可以在 <code>/blog/[slug]/document</code> 上保留 <code>x-robots-tag: noindex</code>；若未来希望 HTML 文档本身被搜索引擎收录，则需要为 document route 单独设计 canonical 与元信息策略。
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">07</span>方案对比与选择</h2>
+
+<h3>写入策略对比</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>指标</th>
+      <th>预渲染入库 (HTML)</th>
+      <th>原样入库 (Markdown)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>读取性能</td>
+      <td>最优，HTML 直出</td>
+      <td>略慢 ~3-10ms（Markdown 解析）</td>
+    </tr>
+    <tr>
+      <td>源码保留</td>
+      <td>丢失 Markdown 原文</td>
+      <td>完整保留，可再编辑</td>
+    </tr>
+    <tr>
+      <td>渲染一致性</td>
+      <td>写入时锁定渲染结果</td>
+      <td>随渲染器升级自动更新样式</td>
+    </tr>
+    <tr>
+      <td>存储体积</td>
+      <td>HTML 比 Markdown 大 ~1.5-2x</td>
+      <td>更紧凑</td>
+    </tr>
+    <tr>
+      <td>全站样式更新</td>
+      <td>需重新渲染所有文章</td>
+      <td>自动生效</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>页面渲染模式对比</h3>
+
+<div class="card-row">
+  <div class="card">
+    <div class="label">当前：force-dynamic SSR</div>
+    <p>每次访问查 DB + 渲染，延迟 ~200-500ms。数据实时可见。每个 PV 都查一次 Supabase。简单粗暴，无缓存。</p>
+  </div>
+  <div class="card">
+    <div class="label">可选：ISR 增量静态再生成</div>
+    <p>命中缓存时 ~0ms（CDN 直出）。写入后通过 revalidatePath 刷新，延迟 &lt;1s。只在缓存失效时查 DB。去掉 force-dynamic 即可。</p>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>指标</th>
+      <th>force-dynamic (当前)</th>
+      <th>ISR (可优化)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>首次访问延迟</td>
+      <td>~200-500ms</td>
+      <td>~0ms (CDN 命中)</td>
+    </tr>
+    <tr>
+      <td>数据新鲜度</td>
+      <td>实时</td>
+      <td>写入后 &lt;1s 可见</td>
+    </tr>
+    <tr>
+      <td>Supabase 负载</td>
+      <td>每 PV 一次查询</td>
+      <td>仅缓存失效时查询</td>
+    </tr>
+    <tr>
+      <td>Markdown 渲染开销</td>
+      <td>每请求都算一次</td>
+      <td>缓存失效时才算</td>
+    </tr>
+    <tr>
+      <td>改动量</td>
+      <td>—</td>
+      <td>删除 3 行 force-dynamic</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note warn">
+  <strong>推荐组合。</strong>
+  Markdown 原样入库 + ISR 是最优组合：Markdown 的动态渲染开销（~5ms）被 ISR 的缓存层完全吸收——只有缓存 miss 时才执行一次，后续访问全部由 CDN 静态页面直出。既保留了 Markdown 源码的可编辑性，又获得了接近零延迟的访问速度。
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">08</span>实施路径</h2>
+
+<ol class="step-list">
+  <li>
+    <strong>数据库：新增 body_format 列</strong><br>
+    <code>ALTER TABLE posts ADD COLUMN body_format text NOT NULL DEFAULT 'html';</code><br>
+    合法值：<code>'html'</code>、<code>'md'</code>、<code>'blocks'</code>、<code>'html_document'</code>。存量数据全部默认为 <code>'html'</code>，历史 <code>Block[]</code> 可通过读取时嗅探继续兼容，不需要立即迁移。
+  </li>
+  <li>
+    <strong>posts-service.ts：写入分支</strong><br>
+    当请求携带 <code>body_format: "md"</code> 时，跳过 <code>marked.parse()</code>，将 Markdown 原文直接存入 <code>body</code> 列，同时写入 <code>body_format = 'md'</code>。当请求携带 <code>body_format: "html_document"</code> 时，要求提交 <code>body_html</code>，并原样保存完整 HTML 文档。
+  </li>
+  <li>
+    <strong>page.tsx：渲染分支</strong><br>
+    读取 <code>post.body_format</code>：<code>'md'</code> 在服务端调用 <code>marked.parse()</code> 后再走代码高亮；<code>'html_document'</code> 不进入 <code>.prose</code>，而是从 <code>/blog/[slug]</code> 直接跳转到 <code>/blog/[slug]/document</code>。
+  </li>
+  <li>
+    <strong>document 路由：隔离完整 HTML</strong><br>
+    新增 <code>app/(site)/blog/[slug]/document/route.ts</code>，只允许 <code>body_format = 'html_document'</code> 的文章返回完整 HTML。响应头使用 <code>text/html; charset=utf-8</code>，并建议添加 <code>x-robots-tag: noindex</code>，避免重复收录。
+  </li>
+  <li>
+    <strong>CLI：新增 --raw 开关</strong><br>
+    <code>node blog.mjs publish article.md --raw</code> 将 Markdown 原样提交，不经过服务端预渲染。默认行为不变（仍预渲染为 HTML）。
+  </li>
+  <li>
+    <strong>CLI/API：新增 HTML document 发布模式</strong><br>
+    <code>node blog.mjs publish-html docs/blog-architecture.html --title "PandaTalk8 博客文章发布技术方案"</code> 或 HTTP API 提交 <code>{ body_html, body_format: "html_document" }</code>。第一阶段只支持可信管理员/API 发布，不进入富文本编辑器。
+  </li>
+  <li>
+    <strong>可选：去掉 force-dynamic，启用 ISR</strong><br>
+    删除页面中的 <code>export const dynamic = "force-dynamic"</code>，利用已有的 <code>generateStaticParams</code> + <code>revalidatePath</code> 获得 CDN 级性能。
+  </li>
+</ol>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">09</span>完整数据流总览</h2>
+
+<pre><code>
+  <span class="wh">┌─────────────────────────────────────────────────────────────┐</span>
+  <span class="wh">│</span>                     <span class="hl">WRITE PATH</span>                              <span class="wh">│</span>
+  <span class="wh">│</span>                                                             <span class="wh">│</span>
+  <span class="wh">│</span>   .md 文件  ──▶  CLI  ──▶  API Route  ──▶  posts-service    <span class="wh">│</span>
+  <span class="wh">│</span>                                              │              <span class="wh">│</span>
+  <span class="wh">│</span>                               ┌──────────────┼──────────┐   <span class="wh">│</span>
+  <span class="wh">│</span>                               ▼              ▼          ▼   <span class="wh">│</span>
+  <span class="wh">│</span>                          <span class="gr">预渲染 HTML</span>    <span class="pp">保留 Markdown</span>   <span class="bl">AI</span>  <span class="wh">│</span>
+  <span class="wh">│</span>                          <span class="or">完整 HTML 文档</span>                         <span class="wh">│</span>
+  <span class="wh">│</span>                               │              │       slug  <span class="wh">│</span>
+  <span class="wh">│</span>                               └──────┬───────┘       +tag  <span class="wh">│</span>
+  <span class="wh">│</span>                                      ▼                     <span class="wh">│</span>
+  <span class="wh">│</span>                               <span class="hl">Supabase INSERT</span>               <span class="wh">│</span>
+  <span class="wh">│</span>                         body + body_format + meta           <span class="wh">│</span>
+  <span class="wh">│</span>                                      │                     <span class="wh">│</span>
+  <span class="wh">│</span>                               <span class="rd">revalidatePath(…)</span>             <span class="wh">│</span>
+  <span class="wh">└──────────────────────────────────────┼──────────────────────┘</span>
+                                         │
+  <span class="wh">┌──────────────────────────────────────┼──────────────────────┐</span>
+  <span class="wh">│</span>                     <span class="bl">STORAGE</span>          │                      <span class="wh">│</span>
+  <span class="wh">│</span>                                      ▼                      <span class="wh">│</span>
+  <span class="wh">│</span>   Supabase  ┌──────────────────────────────────────────┐    <span class="wh">│</span>
+  <span class="wh">│</span>   posts     │ slug │ body │ body_format │ tag │ date │    <span class="wh">│</span>
+  <span class="wh">│</span>             │      │ <span class="gr">HTML</span> │ <span class="gr">'html'</span>      │     │      │    <span class="wh">│</span>
+  <span class="wh">│</span>             │      │ <span class="pp"># MD</span> │ <span class="pp">'md'</span>        │     │      │    <span class="wh">│</span>
+  <span class="wh">│</span>             │      │ <span class="or">&lt;html&gt;</span>│ <span class="or">'html_document'</span> │ │      │    <span class="wh">│</span>
+  <span class="wh">│</span>             │      │ <span class="bl">[{…}]</span>│ <span class="bl">'blocks'</span>    │     │      │    <span class="wh">│</span>
+  <span class="wh">│</span>             └──────────────────────────────────────────┘    <span class="wh">│</span>
+  <span class="wh">│</span>   R2 CDN    images/*                                       <span class="wh">│</span>
+  <span class="wh">└──────────────────────────────────────┬──────────────────────┘</span>
+                                         │
+  <span class="wh">┌──────────────────────────────────────┼──────────────────────┐</span>
+  <span class="wh">│</span>                     <span class="gr">READ PATH</span>         │                      <span class="wh">│</span>
+  <span class="wh">│</span>                                      ▼                      <span class="wh">│</span>
+  <span class="wh">│</span>   浏览器 → Vercel CDN → Next.js SSR                         <span class="wh">│</span>
+  <span class="wh">│</span>                            │                                <span class="wh">│</span>
+  <span class="wh">│</span>                     getPost(slug)                           <span class="wh">│</span>
+  <span class="wh">│</span>                            │                                <span class="wh">│</span>
+  <span class="wh">│</span>                   detectBodyFormat()                         <span class="wh">│</span>
+  <span class="wh">│</span>                      │       │        │                      <span class="wh">│</span>
+  <span class="wh">│</span>                      ▼       ▼        ▼                      <span class="wh">│</span>
+  <span class="wh">│</span>                   <span class="gr">html</span>     <span class="pp">md</span>     <span class="bl">blocks</span>   <span class="or">html_document</span>   <span class="wh">│</span>
+  <span class="wh">│</span>                      │       │        │                      <span class="wh">│</span>
+  <span class="wh">│</span>                      │  <span class="pp">marked.parse</span>  .map()   redirect        <span class="wh">│</span>
+  <span class="wh">│</span>                      │       │        │                      <span class="wh">│</span>
+  <span class="wh">│</span>                      └───┬───┘   React 元素                  <span class="wh">│</span>
+  <span class="wh">│</span>                          ▼            │                      <span class="wh">│</span>
+  <span class="wh">│</span>                  <span class="hl">highlightCodeBlocks</span>   │                      <span class="wh">│</span>
+  <span class="wh">│</span>                          │            │                      <span class="wh">│</span>
+  <span class="wh">│</span>                <span class="gr">dangerouslySetInnerHTML</span> │   /document route     <span class="wh">│</span>
+  <span class="wh">│</span>                          │            │                      <span class="wh">│</span>
+  <span class="wh">│</span>                          └──────┬─────┘                      <span class="wh">│</span>
+  <span class="wh">│</span>                                 ▼                            <span class="wh">│</span>
+  <span class="wh">│</span>                      <span class="wh">完整 HTML 页面返回</span>                       <span class="wh">│</span>
+  <span class="wh">└─────────────────────────────────────────────────────────────┘</span>
+</code></pre>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">10</span>结论</h2>
+
+<p>
+这套方案的核心设计是<strong>存储格式与渲染解耦</strong>：数据库的 <code>body</code> 列可以存任意格式的内容，页面渲染层通过 <code>body_format</code> 标记（或内容嗅探）自动选择对应的渲染管线。
+</p>
+<p>
+对于 Markdown 内容，渲染发生在 Next.js 的 Server Component 内（服务端），不增加客户端 JavaScript 体积。配合 ISR 缓存后，Markdown 的动态渲染开销只在缓存失效时产生一次，后续请求全部由 CDN 直出静态页面。
+</p>
+<p>
+完整 HTML 文档不应该被当成正文片段注入现有文章模板，而应该通过独立 document 路由直接输出。这样既能保留技术文档、报告、可视化页面自己的 CSS 与布局，又不会破坏主站导航、页脚、文章样式、RSS 和 OG 卡片。
+</p>
+<p>
+这使得博客系统同时具备了：<strong>HTML 正文片段的零开销直出</strong>、<strong>Markdown 内容的动态渲染与源码可编辑性</strong>、<strong>完整 HTML 文档的隔离发布能力</strong>、<strong>历史 Block 格式的向后兼容</strong>——四种格式在同一套发布与渲染管线中无缝共存。
+</p>
+
+<footer>
+  PandaTalk8 &middot; Architecture Doc &middot; 2026-05-11
+</footer>
+
+</div>
+</body>
+</html>

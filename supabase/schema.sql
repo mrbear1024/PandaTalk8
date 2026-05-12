@@ -13,6 +13,7 @@ create table if not exists posts (
   -- string (e.g. '"<p>...</p>"'). Legacy posts may hold an array of typed
   -- blocks; both are handled by the reader.
   body         jsonb       not null default '""'::jsonb,
+  body_format  text        not null default 'html' check (body_format in ('html','md','blocks','html_document')),
   cover        text,
   -- Pinned posts surface above non-pinned posts on the blog index, regardless
   -- of date. Used for editorial highlights / evergreen content.
@@ -22,6 +23,7 @@ create table if not exists posts (
 
 -- Idempotent migration for existing databases.
 alter table posts add column if not exists featured boolean not null default false;
+alter table posts add column if not exists body_format text not null default 'html';
 
 create table if not exists projects (
   slug         text primary key,
