@@ -69,15 +69,6 @@ export default function Nav() {
           <ThemeToggle />
         </nav>
         <div className="mobile-actions">
-          <a
-            href="/blog/rss.xml"
-            className="nav-rss"
-            aria-label="RSS feed"
-            title="RSS feed"
-          >
-            <LuRss size={18} />
-          </a>
-          <ThemeToggle />
           <button
             type="button"
             className="mobile-menu-toggle"

@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ThemeBootScript from "@/components/ThemeBootScript";
 import { baseMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = baseMetadata();
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
