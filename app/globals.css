@@ -2618,6 +2618,8 @@ nav.primary .nav-rss::after {
 .blog-search {
   position: relative;
   flex: 1 1 320px;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   background: var(--paper);
@@ -2628,7 +2630,7 @@ nav.primary .nav-rss::after {
 }
 .blog-search:focus-within {
   border-color: var(--ink);
-  box-shadow: 3px 3px 0 var(--panda-red);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--panda-red) 22%, transparent);
 }
 .blog-search-icon {
   font-family: var(--font-mono);
@@ -2638,9 +2640,11 @@ nav.primary .nav-rss::after {
 }
 .blog-search-input {
   flex: 1;
+  min-width: 0;
   border: 0;
   background: transparent;
   outline: none;
+  appearance: none;
   color: var(--ink);
   font: inherit;
   font-size: 0.95rem;
@@ -2659,6 +2663,7 @@ nav.primary .nav-rss::after {
 }
 .blog-search-clear:hover { color: var(--ink); }
 .rss-pill {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2682,6 +2687,19 @@ nav.primary .nav-rss::after {
   color: var(--ink);
 }
 .rss-icon { font-size: 0.95rem; }
+
+@media (max-width: 640px) {
+  .blog-toolbar {
+    align-items: stretch;
+  }
+  .blog-search,
+  .rss-pill {
+    width: 100%;
+  }
+  .rss-pill {
+    justify-content: center;
+  }
+}
 
 .blog-tags {
   display: flex;
