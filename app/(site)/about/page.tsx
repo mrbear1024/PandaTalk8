@@ -5,7 +5,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
   title: "About · PandaTalk8",
-  description: "A pixel panda in glasses and a hoodie — and how he got here.",
+  description: "Engineer turned indie creator — making a living through content, courses, and X/Twitter.",
 };
 
 function renderPara(text: string) {
@@ -34,7 +34,7 @@ export default async function AboutPage() {
             </span>
           </h1>
         </div>
-        <div className="side">A pixel panda in glasses and a hoodie — and how he got here.</div>
+        <div className="side">Engineer turned indie creator — making a living through content, courses, and X/Twitter.</div>
       </section>
 
       <div className="about-grid">

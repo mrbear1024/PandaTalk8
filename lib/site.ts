@@ -31,38 +31,38 @@ export const ABOUT: About = {
     {
       heading: "Hello",
       paragraphs: [
-        "I'm Mr Panda. I spent six years writing backend code at a large tech company, and now I sit in my own rented apartment shipping AI products, recording content, writing code, and talking to strangers on X all day.",
-        "I quit in March 2025 to go full-time indie. A year later I'm still alive, and I sleep better than I did in the office.",
+        "I'm Mr Panda — a mid-career developer turned indie creator. I spent years on the front lines of the internet industry as an engineer, shipping backend systems and leading teams. Now I work for myself.",
+        "I left the corporate world to build my own thing. Today I create content full-time, run paid courses, and stay embarrassingly active on X/Twitter every single day.",
       ],
     },
     {
-      heading: "What I build",
+      heading: "What I do now",
       paragraphs: [
-        "I build **AI tools**, make **content** on X and WeChat, and run paid communities for AI learning and X growth.",
-        "I believe the best products come from tools the maker actually uses. So everything I ship, I use every day.",
+        "I make a living through **self-media traffic and online courses** — teaching AI, programming, and creator growth to thousands of students.",
+        "I'm also a long-time X/Twitter native. Most of my audience found me there, and it's still where I spend the most energy: writing threads, sharing lessons, and connecting with other builders.",
       ],
     },
     {
       heading: "What I believe",
       paragraphs: [
-        "That one person can build something that serves a hundred thousand — as long as they are honest enough, patient enough, and willing to reply to every comment.",
-        "That AI is still wildly under-used, especially by non-technical creators. There's a decade of product work in that gap.",
-        "That content and products are the same thing, not two different things.",
+        "That the best era for solo creators is right now — one person with AI tools, a distribution channel, and genuine expertise can build a real business.",
+        "That content is the product. The course, the community, the brand — they all start from a single tweet or article that resonated.",
+        "That mid-career reinvention is hard but worth it. Trading a salary for autonomy is a bet on yourself, and the odds improve every year you keep showing up.",
       ],
     },
     {
       heading: "Say hi",
       paragraphs: [
         "The fastest way to reach me is a DM on X, or search the WeChat public account PandaTalk8. I read everything. I can't always reply — please don't take it personally.",
-        "If you're also a solo builder, an AI founder, or just curious — come say hi.",
+        "If you're also navigating a career pivot, building courses, or just curious about the indie creator life — come say hi.",
       ],
     },
   ],
   timeline: [
-    { year: "2026", what: "Launching Bamboo Notes", detail: "Writing tool for indie creators. June." },
-    { year: "2025", what: "Full-time solo: products + content", detail: "PandaTalk8, AI learning, X growth, paid communities." },
-    { year: "2024", what: "Started posting AI content on X", detail: "First tweet to break 10k." },
-    { year: "2018–2024", what: "Backend engineer at a large tech company", detail: "Six years of Go. Led an eight-person team." },
+    { year: "2026", what: "Scaling courses & community", detail: "AI courses, creator growth programs, 12K+ learning group." },
+    { year: "2025", what: "Went full-time indie", detail: "Left the industry. Content creation, courses, and X growth became the main gig." },
+    { year: "2024", what: "Started posting AI content on X", detail: "First tweet to break 10k. Built an audience from zero." },
+    { year: "2018–2024", what: "Engineer at a large tech company", detail: "Backend systems, Go, team lead. Six years on the front lines." },
     { year: "2014", what: "First time writing code", detail: "Freshman year. Built a campus used-book trading site." },
   ],
 };

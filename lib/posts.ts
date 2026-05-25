@@ -1,23 +1,15 @@
 import { getSupabase, getSupabaseNoStore, getSupabaseTagged, isSupabaseConfigured } from "./supabase";
-import { getHtmlDocumentDemoPost } from "./html-document-demo";
 import { SEED_POSTS } from "./seed";
 import type { Post } from "./types";
 
 const POST_LIST_COLUMNS = "slug,date,read_time,lang,tag,title,excerpt,cover,featured,created_at";
 
 export async function getAllPosts(): Promise<Post[]> {
-  const demo = await getHtmlDocumentDemoPost("blog-architecture-demo");
-  if (!isSupabaseConfigured) return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
+  if (!isSupabaseConfigured) return SEED_POSTS;
   const sb = getSupabase()!;
-  // Order by date first (the editorial date the author chose), then by
-  // created_at as a tiebreaker so multiple posts published on the same day
-  // surface in the order they were written. Without the tiebreaker the order
-  // is unstable and brand-new posts can be hidden behind older same-day ones.
   const { data, error } = await sb
     .from("posts")
     .select(POST_LIST_COLUMNS)
-    // Featured posts surface above non-featured ones, then newest first,
-    // then created_at as a stable tiebreaker for same-day publishes.
     .order("featured", { ascending: false })
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
@@ -31,14 +23,13 @@ export async function getAllPosts(): Promise<Post[]> {
   }
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);
-    return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
+    return SEED_POSTS;
   }
-  return demo ? [demo, ...((data ?? []) as Post[])] : ((data ?? []) as Post[]);
+  return (data ?? []) as Post[];
 }
 
 export async function getAllPostsWithBody(): Promise<Post[]> {
-  const demo = await getHtmlDocumentDemoPost("blog-architecture-demo");
-  if (!isSupabaseConfigured) return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
+  if (!isSupabaseConfigured) return SEED_POSTS;
   const sb = getSupabaseNoStore()!;
   const { data, error } = await sb
     .from("posts")
@@ -56,15 +47,12 @@ export async function getAllPostsWithBody(): Promise<Post[]> {
   }
   if (error) {
     console.warn("[posts] supabase error, falling back to seed:", error.message);
-    return demo ? [demo, ...SEED_POSTS] : SEED_POSTS;
+    return SEED_POSTS;
   }
-  return demo ? [demo, ...((data ?? []) as Post[])] : ((data ?? []) as Post[]);
+  return (data ?? []) as Post[];
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
-  const demo = await getHtmlDocumentDemoPost(slug);
-  if (demo) return demo;
-
   if (!isSupabaseConfigured) {
     return SEED_POSTS.find((p) => p.slug === slug) ?? null;
   }
