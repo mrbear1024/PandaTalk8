@@ -113,7 +113,7 @@ export async function GET(request: Request) {
                 }}
               >
                 <span style={{ width: 11, height: 11, borderRadius: 999, background: "#24643f" }} />
-                <strong>74.9K followers on X</strong>
+                <strong>75K followers on X</strong>
                 <span>·</span>
                 <span>公众号 PandaTalk8</span>
               </div>
