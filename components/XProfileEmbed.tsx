@@ -1,13 +1,3 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-
-declare global {
-  interface Window {
-    twttr?: { widgets?: { load: (el?: HTMLElement | null) => void } };
-  }
-}
-
 type Props = {
   /** Public profile URL for the Follow button (e.g. https://x.com/PandaTalk8). */
   profileUrl: string;
@@ -16,31 +6,9 @@ type Props = {
   followers?: string;
 };
 
-const WIDGETS_SRC = "https://platform.twitter.com/widgets.js";
-
-// Embeds the live X/Twitter profile timeline via the official widgets.js.
-// The inner <a.twitter-timeline> doubles as a graceful fallback link if the
-// script is blocked or still loading.
+// "Follow me on X" card for the About page — mirrors the WeChat promo card,
+// with the panda avatar as the visual on the right.
 export default function XProfileEmbed({ profileUrl, handle, followers }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const render = () => window.twttr?.widgets?.load(ref.current);
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${WIDGETS_SRC}"]`);
-    if (existing) {
-      render();
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = WIDGETS_SRC;
-    s.async = true;
-    s.onload = render;
-    document.body.appendChild(s);
-  }, []);
-
-  const cleanHandle = handle.replace(/^@/, "");
-  const timelineHref = `https://twitter.com/${cleanHandle}`;
-
   return (
     <section id="x" className="x-embed" aria-label="X / Twitter">
       <div className="x-embed-copy">
@@ -59,17 +27,16 @@ export default function XProfileEmbed({ profileUrl, handle, followers }: Props) 
           Follow {handle} →
         </a>
       </div>
-      <div className="x-embed-timeline" ref={ref}>
-        <a
-          className="twitter-timeline"
-          data-theme="dark"
-          data-height="460"
-          data-chrome="noheader nofooter noborders transparent"
-          href={timelineHref}
-        >
-          Tweets by {handle}
-        </a>
-      </div>
+      <a
+        className="x-embed-avatar"
+        href={profileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${handle} on X`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/assets/panda-avatar.png" alt="Mr Panda" />
+      </a>
     </section>
   );
 }

@@ -3092,22 +3092,29 @@ nav.primary .nav-rss::after {
   color: var(--ink-2);
   margin: 0 0 var(--sp-4);
 }
-.x-embed-timeline {
+.x-embed-avatar {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  padding: var(--sp-5);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
-  min-height: 200px;
-  max-height: 480px;
-  overflow-y: auto;
-  background: var(--paper-3);
+  background:
+    radial-gradient(120% 120% at 50% 0%, color-mix(in oklab, var(--panda-red) 16%, transparent), transparent 68%),
+    var(--paper-3);
+  text-decoration: none;
 }
-/* graceful fallback shown before widgets.js replaces the anchor */
-.x-embed-timeline > .twitter-timeline {
+.x-embed-avatar img {
+  width: min(220px, 64%);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   display: block;
-  padding: var(--sp-4);
-  color: var(--link);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
+  transition: transform 160ms ease;
+}
+.x-embed-avatar:hover img {
+  transform: translateY(-2px) scale(1.02);
 }
 
 @media (max-width: 680px) {
