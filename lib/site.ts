@@ -83,3 +83,21 @@ export const HOME = {
   showProjects: true,
   showCourses: true,
 };
+
+// Featured free ebook shown on the home page. The PDF lives in R2; the cover
+// is a static asset rendered from HTML.
+export const BOOK = {
+  show: true,
+  eyebrow: "Free ebook",
+  heading: "免费电子书",
+  title: "X 增长系统方法",
+  subtitle: "从 0 到 75K 关注者的实战方法论",
+  description:
+    "这是我把 X 账号从 0 做到 75K 关注的完整打法：怎么选题、怎么写、怎么排版、怎么分发，以及怎么把流量沉淀成产品。112 页，免费下载阅读。",
+  cover: "/assets/books/x-growth-system-cover.png",
+  pages: "112 页",
+  lang: "中文",
+  format: "PDF",
+  href: "https://course-media.xlearnity.ai/pandatalk/books/x-growth-system-method.pdf",
+  ctaLabel: "下载阅读 (PDF)",
+};

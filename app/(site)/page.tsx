@@ -8,6 +8,7 @@ import { getAllCourses } from "@/lib/courses";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
 import { getSiteSettings } from "@/lib/site-settings";
+import { BOOK } from "@/lib/site";
 
 // Posts/projects are written by both the admin UI (which calls revalidatePath)
 // and a standalone CLI (scripts/blog.mjs) which can't. Dynamic rendering means
@@ -65,6 +66,45 @@ export default async function HomePage() {
             公众号 {site.wechatName}
           </p>
         </header>
+
+        {/* ---- Featured ebook / 免费电子书 ---- */}
+        {BOOK.show ? (
+          <section className="home-section" id="book">
+            <div className="section-head centered">
+              <div className="eyebrow">{BOOK.eyebrow}</div>
+              <h2>{BOOK.heading}</h2>
+            </div>
+            <div className="book-feature">
+              <a
+                className="book-cover"
+                href={BOOK.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${BOOK.title} — 下载阅读`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={BOOK.cover} alt={`《${BOOK.title}》封面`} />
+              </a>
+              <div className="book-copy">
+                <h3 className="book-title">{BOOK.title}</h3>
+                <p className="book-subtitle">{BOOK.subtitle}</p>
+                <p className="book-desc">{BOOK.description}</p>
+                <div className="book-meta">
+                  <span>{BOOK.pages}</span>
+                  <span>·</span>
+                  <span>{BOOK.lang}</span>
+                  <span>·</span>
+                  <span>{BOOK.format}</span>
+                </div>
+                <div className="book-actions">
+                  <a className="btn" href={BOOK.href} target="_blank" rel="noopener noreferrer">
+                    {BOOK.ctaLabel} →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* ---- Work with me / 产品与课程 (Resources) ---- */}
         {home.showCourses || home.showCommunities ? (
