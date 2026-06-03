@@ -68,10 +68,10 @@ export const ABOUT: About = {
 };
 
 export const HOME = {
-  kicker: "online · building in public",
-  title: "AI builder &",
-  titleAccent: "indie founder",
-  lede: "Building products, writing ideas, and selling myself in public.",
+  kicker: "online · AI builder & indie founder",
+  title: "Build products. Write ideas.",
+  titleAccent: "Sell in public",
+  lede: "每周分享 AI、编程与独立开发的实战思考。和我一起，在公开场合构建自己的事业。",
   primaryCtaLabel: "Follow @PandaTalk8 →",
   primaryCtaHref: "https://x.com/PandaTalk8",
   secondaryCtaLabel: "订阅公众号",
