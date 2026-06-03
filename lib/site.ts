@@ -69,7 +69,7 @@ export const ABOUT: About = {
 
 export const HOME = {
   kicker: "online · AI builder & indie founder",
-  title: "Build products. Write ideas.",
+  title: "Build products. Write ideas. Create media.",
   titleAccent: "Sell in public",
   lede: "每周分享 AI、编程与独立开发的实战思考。和我一起，在公开场合构建自己的事业。",
   primaryCtaLabel: "Follow @PandaTalk8 →",
