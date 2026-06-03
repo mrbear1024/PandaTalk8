@@ -15,7 +15,6 @@ import {
   LuX,
 } from "react-icons/lu";
 import type { IconType } from "react-icons";
-import ThemeToggle from "./ThemeToggle";
 
 const items: { key: string; label: string; icon: IconType; href: string }[] = [
   { key: "home", label: "Home", icon: LuHouse, href: "/" },
@@ -66,7 +65,6 @@ export default function Nav() {
           >
             <LuRss size={16} />
           </a>
-          <ThemeToggle />
         </nav>
         <div className="mobile-actions">
           <button
@@ -94,9 +92,6 @@ export default function Nav() {
               <LuRss aria-hidden />
               <span>RSS</span>
             </a>
-            <div className="mobile-tool theme-tool">
-              <ThemeToggle />
-            </div>
           </div>
         </nav>
       ) : null}
