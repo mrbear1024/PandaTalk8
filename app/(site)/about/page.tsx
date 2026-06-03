@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import Socials from "@/components/Socials";
 import WechatPromo from "@/components/WechatPromo";
+import XProfileEmbed from "@/components/XProfileEmbed";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export const metadata = {
@@ -85,6 +86,7 @@ export default async function AboutPage() {
         </aside>
         <div className="main">
           <WechatPromo />
+          <XProfileEmbed profileUrl={site.xUrl} handle={site.xHandle} followers={site.xFollowers} />
           <div className="prose">
             {about.sections.map((s, i) => (
               <Fragment key={i}>

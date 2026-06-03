@@ -3069,6 +3069,47 @@ nav.primary .nav-rss::after {
   display: block;
 }
 
+/* ---- X / Twitter embed card (About) ---- */
+.x-embed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.95fr);
+  gap: var(--sp-5);
+  align-items: stretch;
+  scroll-margin-top: 120px;
+  margin: 0 0 var(--sp-7);
+  padding: var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+.x-embed-copy { align-self: center; }
+.x-embed h2 {
+  margin: var(--sp-2) 0 var(--sp-3);
+  font-size: var(--step-2);
+}
+.x-embed-copy p {
+  color: var(--ink-2);
+  margin: 0 0 var(--sp-4);
+}
+.x-embed-timeline {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-height: 200px;
+  max-height: 480px;
+  overflow-y: auto;
+  background: var(--paper-3);
+}
+/* graceful fallback shown before widgets.js replaces the anchor */
+.x-embed-timeline > .twitter-timeline {
+  display: block;
+  padding: var(--sp-4);
+  color: var(--link);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
 @media (max-width: 680px) {
   .offer-grid,
   .course-grid,
@@ -3082,6 +3123,9 @@ nav.primary .nav-rss::after {
   .wechat-promo-visual {
     grid-template-columns: 1fr;
     justify-items: start;
+  }
+  .x-embed {
+    grid-template-columns: 1fr;
   }
   .trust-strip {
     align-items: center;
