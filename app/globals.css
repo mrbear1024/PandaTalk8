@@ -2659,9 +2659,9 @@ nav.primary .nav-rss::after {
 /* ---- Free ebooks module ---- */
 .book-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--sp-5);
-  max-width: 880px;
+  max-width: 720px;
   margin: 0 auto;
 }
 .book-card {
