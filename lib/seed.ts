@@ -188,23 +188,10 @@ export const SEED_COMMUNITIES: Community[] = [
 
 export const SEED_COURSES: Course[] = [
   {
-    slug: "x-growth-system",
-    title: "X Growth System",
-    subtitle: "Build, write, and sell in public.",
-    cover: null,
-    description: "一门关于 X 账号定位、内容增长和商业化路径的系统课程。课程在独立系统中承接。",
-    price: "Coming soon",
-    status: "coming_soon",
-    external_url: "https://pandatalk8.com",
-    cta_label: "查看课程系统",
-    sort_order: 1,
-    featured: true,
-  },
-  {
     slug: "ai-coding",
     title: "AI 编程课",
     subtitle: "用 AI 把编程效率拉满",
-    cover: null,
+    cover: "/assets/courses/ai-coding-cover.png",
     description:
       "从 Cursor、Claude Code 到 Agent 工作流，手把手教你把 AI 编程工具用到极致，独立开发者的提效实战课。",
     price: "查看详情",
@@ -218,7 +205,7 @@ export const SEED_COURSES: Course[] = [
     slug: "prompt-engineering",
     title: "Prompt 工程课",
     subtitle: "系统掌握提示词工程",
-    cover: null,
+    cover: "/assets/courses/prompt-engineering-cover.png",
     description:
       "从原理到实战，系统讲解 Prompt 工程：结构化提示、上下文工程与 Agent 提示设计，让你真正会用大模型。",
     price: "查看详情",
