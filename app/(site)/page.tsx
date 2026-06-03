@@ -106,30 +106,38 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        {/* ---- Work with me / 产品与课程 (Resources) ---- */}
-        {home.showCourses || home.showCommunities ? (
+        {/* ---- Courses / 课程 ---- */}
+        {home.showCourses && featuredCourses.length > 0 ? (
           <section className="home-section">
             <div className="section-head centered">
-              <div className="eyebrow">Work with me</div>
-              <h2>产品与课程 · ship with Mr Panda</h2>
+              <div className="eyebrow">Courses</div>
+              <h2>课程</h2>
             </div>
-            <div className="offer-grid">
-              {home.showCourses
-                ? featuredCourses.map((course) => (
-                    <CourseCard key={course.slug} course={course} />
-                  ))
-                : null}
-              {home.showCommunities
-                ? featuredCommunities.map((community) => (
-                    <CommunityCard key={community.slug} community={community} />
-                  ))
-                : null}
+            <div className="course-grid">
+              {featuredCourses.map((course) => (
+                <CourseCard key={course.slug} course={course} />
+              ))}
             </div>
             <div className="home-section-more">
-              {home.showCourses ? <Link href="/courses">all courses →</Link> : null}
-              {home.showCommunities ? (
-                <Link href="/community">all communities →</Link>
-              ) : null}
+              <Link href="/courses">all courses →</Link>
+            </div>
+          </section>
+        ) : null}
+
+        {/* ---- Community / 社群 ---- */}
+        {home.showCommunities && featuredCommunities.length > 0 ? (
+          <section className="home-section">
+            <div className="section-head centered">
+              <div className="eyebrow">Community</div>
+              <h2>社群 · 一起成长</h2>
+            </div>
+            <div className="offer-grid">
+              {featuredCommunities.map((community) => (
+                <CommunityCard key={community.slug} community={community} />
+              ))}
+            </div>
+            <div className="home-section-more">
+              <Link href="/community">all communities →</Link>
             </div>
           </section>
         ) : null}
