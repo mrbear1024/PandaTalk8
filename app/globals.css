@@ -2954,6 +2954,12 @@ nav.primary .nav-rss::after {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--sp-5);
 }
+/* Courses: fixed-width cards centered in the row (avoids left-aligned gap
+   when there are only a couple of courses). */
+.course-grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
+  justify-content: center;
+}
 .offer-card,
 .course-card {
   display: flex;
