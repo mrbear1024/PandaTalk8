@@ -200,4 +200,32 @@ export const SEED_COURSES: Course[] = [
     sort_order: 1,
     featured: true,
   },
+  {
+    slug: "ai-coding",
+    title: "AI 编程课",
+    subtitle: "用 AI 把编程效率拉满",
+    cover: null,
+    description:
+      "从 Cursor、Claude Code 到 Agent 工作流，手把手教你把 AI 编程工具用到极致，独立开发者的提效实战课。",
+    price: "查看详情",
+    status: "available",
+    external_url: "https://xlearnity.ai/course/ai-coding",
+    cta_label: "进入课程",
+    sort_order: 2,
+    featured: false,
+  },
+  {
+    slug: "prompt-engineering",
+    title: "Prompt 工程课",
+    subtitle: "系统掌握提示词工程",
+    cover: null,
+    description:
+      "从原理到实战，系统讲解 Prompt 工程：结构化提示、上下文工程与 Agent 提示设计，让你真正会用大模型。",
+    price: "查看详情",
+    status: "available",
+    external_url: "https://xlearnity.ai/course/prompt-engineering",
+    cta_label: "进入课程",
+    sort_order: 3,
+    featured: false,
+  },
 ];
