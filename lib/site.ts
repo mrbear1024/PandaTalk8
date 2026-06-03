@@ -8,7 +8,7 @@ export const SITE: Site = {
   location: "Online",
   xHandle: "@PandaTalk8",
   xUrl: "https://x.com/PandaTalk8",
-  xFollowers: "74.9K",
+  xFollowers: "75K",
   wechatName: "PandaTalk8",
   wechatQr: "/assets/wechat/qrcode-pandatalk8.jpg",
   wechatMaterial: "/assets/wechat/material-2.png",
