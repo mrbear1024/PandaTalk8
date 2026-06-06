@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ASCIIDivider from "@/components/ASCIIDivider";
+import ViewCounter from "@/components/ViewCounter";
 import { getAllPosts, getPost } from "@/lib/posts";
 import { formatDate } from "@/lib/format";
 import { highlightCodeBlocks } from "@/lib/highlight";
@@ -105,6 +106,8 @@ export default async function ArticlePage({ params }: { params: Params }) {
             <span>{post.read_time} read</span>
             <span>·</span>
             <span>by {site.displayName}</span>
+            <span>·</span>
+            <ViewCounter slug={post.slug} initialViews={post.views ?? 0} />
           </div>
         </header>
         <div className="prose">
