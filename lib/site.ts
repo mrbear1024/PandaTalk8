@@ -9,13 +9,13 @@ export const SITE: Site = {
   xHandle: "@PandaTalk8",
   xUrl: "https://x.com/PandaTalk8",
   xFollowers: "75K",
-  wechatName: "PandaTalk8",
+  wechatName: "就叫熊老板",
   wechatQr: "/assets/wechat/qrcode-pandatalk8.jpg",
   wechatMaterial: "/assets/wechat/material-2.png",
   domain: "pandatalk8.com",
   socials: [
     { label: "X", handle: "@PandaTalk8", href: "https://x.com/PandaTalk8" },
-    { label: "公众号", handle: "PandaTalk8", href: "/about#wechat" },
+    { label: "公众号", handle: "就叫熊老板", href: "/about#wechat" },
     { label: "YouTube", handle: "@pandatalk8", href: "https://www.youtube.com/@pandatalk8" },
     { label: "GitHub", handle: "mrbear1024", href: "https://github.com/mrbear1024" },
     { label: "RSS", handle: "/blog/rss.xml", href: "/blog/rss.xml" },
@@ -53,7 +53,7 @@ export const ABOUT: About = {
     {
       heading: "Say hi",
       paragraphs: [
-        "The fastest way to reach me is a DM on X, or search the WeChat public account PandaTalk8. I read everything. I can't always reply — please don't take it personally.",
+        "The fastest way to reach me is a DM on X, or search the WeChat public account 就叫熊老板. I read everything. I can't always reply — please don't take it personally.",
         "If you're also navigating a career pivot, building courses, or just curious about the indie creator life — come say hi.",
       ],
     },
