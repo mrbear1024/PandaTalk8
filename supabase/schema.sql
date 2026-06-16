@@ -18,12 +18,28 @@ create table if not exists posts (
   -- Pinned posts surface above non-pinned posts on the blog index, regardless
   -- of date. Used for editorial highlights / evergreen content.
   featured     boolean     not null default false,
+  -- Cumulative reader view count, bumped via increment_post_views().
+  views        integer     not null default 0,
   created_at   timestamptz not null default now()
 );
 
 -- Idempotent migration for existing databases.
 alter table posts add column if not exists featured boolean not null default false;
 alter table posts add column if not exists body_format text not null default 'html';
+alter table posts add column if not exists views integer not null default 0;
+
+-- Atomic, race-free view increment. SECURITY DEFINER so the public anon role
+-- can bump the counter without a broad UPDATE policy on posts.
+create or replace function increment_post_views(post_slug text)
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+  update posts set views = views + 1 where slug = post_slug returning views;
+$$;
+
+grant execute on function increment_post_views(text) to anon, authenticated, service_role;
 
 create table if not exists projects (
   slug         text primary key,

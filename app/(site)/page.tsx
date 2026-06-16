@@ -8,6 +8,7 @@ import { getAllCourses } from "@/lib/courses";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
 import { getSiteSettings } from "@/lib/site-settings";
+import { BOOKS, BOOKS_SECTION } from "@/lib/site";
 
 // Posts/projects are written by both the admin UI (which calls revalidatePath)
 // and a standalone CLI (scripts/blog.mjs) which can't. Dynamic rendering means
@@ -66,30 +67,77 @@ export default async function HomePage() {
           </p>
         </header>
 
-        {/* ---- Work with me / 产品与课程 (Resources) ---- */}
-        {home.showCourses || home.showCommunities ? (
+        {/* ---- Free ebooks / 免费电子书 ---- */}
+        {BOOKS_SECTION.show && BOOKS.length > 0 ? (
+          <section className="home-section" id="book">
+            <div className="section-head centered">
+              <div className="eyebrow">{BOOKS_SECTION.eyebrow}</div>
+              <h2>{BOOKS_SECTION.heading}</h2>
+            </div>
+            <div className="book-grid">
+              {BOOKS.map((book) => (
+                <a
+                  key={book.slug}
+                  className="book-card"
+                  href={book.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${book.title} — 下载阅读`}
+                >
+                  <div className="book-card-cover">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={book.cover} alt={`《${book.title}》封面`} />
+                  </div>
+                  <div className="book-card-body">
+                    <h3 className="book-card-title">{book.title}</h3>
+                    <p className="book-card-sub">{book.subtitle}</p>
+                    <div className="book-card-meta">
+                      <span>{book.pages}</span>
+                      <span>·</span>
+                      <span>{book.lang}</span>
+                      <span>·</span>
+                      <span>{book.format}</span>
+                    </div>
+                    <span className="book-card-cta">下载阅读 (PDF) →</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* ---- Courses / 课程 ---- */}
+        {home.showCourses && featuredCourses.length > 0 ? (
           <section className="home-section">
             <div className="section-head centered">
-              <div className="eyebrow">Work with me</div>
-              <h2>产品与课程 · ship with Mr Panda</h2>
+              <div className="eyebrow">Courses</div>
+              <h2>课程</h2>
             </div>
-            <div className="offer-grid">
-              {home.showCourses
-                ? featuredCourses.map((course) => (
-                    <CourseCard key={course.slug} course={course} />
-                  ))
-                : null}
-              {home.showCommunities
-                ? featuredCommunities.map((community) => (
-                    <CommunityCard key={community.slug} community={community} />
-                  ))
-                : null}
+            <div className="course-grid">
+              {featuredCourses.map((course) => (
+                <CourseCard key={course.slug} course={course} />
+              ))}
             </div>
             <div className="home-section-more">
-              {home.showCourses ? <Link href="/courses">all courses →</Link> : null}
-              {home.showCommunities ? (
-                <Link href="/community">all communities →</Link>
-              ) : null}
+              <Link href="/courses">all courses →</Link>
+            </div>
+          </section>
+        ) : null}
+
+        {/* ---- Community / 社群 ---- */}
+        {home.showCommunities && featuredCommunities.length > 0 ? (
+          <section className="home-section">
+            <div className="section-head centered">
+              <div className="eyebrow">Community</div>
+              <h2>社群 · 一起成长</h2>
+            </div>
+            <div className="offer-grid">
+              {featuredCommunities.map((community) => (
+                <CommunityCard key={community.slug} community={community} />
+              ))}
+            </div>
+            <div className="home-section-more">
+              <Link href="/community">all communities →</Link>
             </div>
           </section>
         ) : null}

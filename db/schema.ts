@@ -13,6 +13,7 @@ export const posts = pgTable("posts", {
   bodyFormat: text("body_format").notNull().default("html"),
   cover: text("cover"),
   featured: boolean("featured").notNull().default(false),
+  views: integer("views").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

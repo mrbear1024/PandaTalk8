@@ -242,6 +242,28 @@ export async function deletePost(slug: string): Promise<void> {
   bustCaches(slug);
 }
 
+// Atomically bump a post's view counter and return the new total. Runs
+// through the admin client + a SECURITY DEFINER SQL function so the update is
+// race-free under concurrent reads. Returns null (never throws) when Supabase
+// isn't configured, the `views` column / RPC haven't been migrated yet, or the
+// slug doesn't exist — callers treat null as "counting unavailable".
+export async function recordPostView(slug: string): Promise<number | null> {
+  if (!slug) return null;
+  try {
+    const sb = getAdminSupabase();
+    const { data, error } = await sb.rpc("increment_post_views", { post_slug: slug });
+    if (error) {
+      console.warn(`[posts] view increment failed for ${slug}:`, error.message);
+      return null;
+    }
+    return typeof data === "number" ? data : null;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`[posts] view increment unavailable for ${slug}: ${msg}`);
+    return null;
+  }
+}
+
 export async function listPostsAdmin(): Promise<Post[]> {
   const sb = getAdminSupabase();
   const { data, error } = await sb

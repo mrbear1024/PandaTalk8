@@ -24,6 +24,9 @@ export type Post = {
   body_format?: PostBodyFormat | null;
   cover?: string | null;
   featured?: boolean | null;
+  // Cumulative reader view count. Absent on legacy rows / before the
+  // `views` column migration runs, so always treat as optional.
+  views?: number | null;
 };
 
 export type ProjectStatus = "ship" | "wip" | "idea";

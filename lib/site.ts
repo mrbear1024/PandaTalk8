@@ -69,7 +69,7 @@ export const ABOUT: About = {
 
 export const HOME = {
   kicker: "online · AI builder & indie founder",
-  title: "Build products. Write ideas. Create media.",
+  title: "Write ideas. Create media.",
   titleAccent: "Sell in public",
   lede: "每周分享 AI、编程与独立开发的实战思考。和我一起，在公开场合构建自己的事业。",
   primaryCtaLabel: "Follow @PandaTalk8 →",
@@ -83,3 +83,34 @@ export const HOME = {
   showProjects: true,
   showCourses: true,
 };
+
+// Free ebooks shown on the home page. Each PDF lives in R2; covers are static
+// assets rendered from HTML in public/assets/books.
+export const BOOKS_SECTION = {
+  show: true,
+  eyebrow: "Free ebooks",
+  heading: "免费电子书",
+};
+
+export const BOOKS = [
+  {
+    slug: "x-growth-system",
+    title: "X 增长系统方法",
+    subtitle: "从 0 到 75K 关注者的实战方法论",
+    cover: "/assets/books/x-growth-system-cover.png",
+    pages: "112 页",
+    lang: "中文",
+    format: "PDF",
+    href: "https://course-media.xlearnity.ai/pandatalk/books/x-growth-system-method.pdf",
+  },
+  {
+    slug: "ai-agent-framework",
+    title: "智能体框架设计",
+    subtitle: "从零设计一个 AI Agent 框架",
+    cover: "/assets/books/ai-agent-framework-cover.png",
+    pages: "142 页",
+    lang: "中文",
+    format: "PDF",
+    href: "https://course-media.xlearnity.ai/pandatalk/books/ai-agent-framework.pdf",
+  },
+];
