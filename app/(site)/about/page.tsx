@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import Image from "next/image";
 import Socials from "@/components/Socials";
 import WechatPromo from "@/components/WechatPromo";
 import XProfileEmbed from "@/components/XProfileEmbed";
@@ -41,8 +42,14 @@ export default async function AboutPage() {
       <div className="about-grid">
         <aside className="side">
           <div className="about-card">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/panda-avatar.png" alt="Panda avatar" />
+            <Image
+              src="/assets/about-portrait.webp"
+              alt="Mr Panda（熊猫老板）肖像"
+              width={960}
+              height={960}
+              sizes="(max-width: 820px) calc(100vw - 80px), 35vw"
+              priority
+            />
             <div className="name">Mr Panda</div>
             <div className="handle">{site.xHandle} · he/him</div>
             <div className="stats">

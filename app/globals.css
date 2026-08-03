@@ -1295,7 +1295,9 @@ nav.primary .nav-rss::after {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
 }
 .about-card img {
+  display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 1/1;
   object-fit: cover;
   background: var(--paper);
